@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { FaShip, FaPhone, FaTimes, FaUser, FaEnvelope, FaCalendarAlt, FaCommentAlt, FaCheckCircle } from 'react-icons/fa';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
+import callbackService from '../../../services/callbackService';
 
 const cruiseHighlights = [
   { title: "Cruise Dining", img: "/images/dining.jpg" },
@@ -404,7 +405,7 @@ const Itinerary = () => {
   const [searchParams] = useSearchParams();
   const cruiseId = searchParams.get('cruise');
   const cruiseLine = searchParams.get('cruiseLine');
-  const [showCallbackPopup, setShowCallbackPopup] = useState(false);
+  const [isCallbackModalOpen, setIsCallbackModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -414,22 +415,40 @@ const Itinerary = () => {
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [activeField, setActiveField] = useState(null);
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formSubmitError, setFormSubmitError] = useState('');
+  const [formSubmitSuccess, setFormSubmitSuccess] = useState(false);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, you would send this data to your backend
-    console.log("Form submitted:", formData);
-    setFormSubmitted(true);
     
-    // Reset form after 3 seconds and close popup
-    setTimeout(() => {
-      setFormSubmitted(false);
-      setShowCallbackPopup(false);
+    // Validate form data
+    if (!formData.name || !formData.phone || !formData.email) {
+      setFormSubmitError('Please fill in all required fields');
+      return;
+    }
+    
+    setFormSubmitting(true);
+    setFormSubmitError('');
+    
+    try {
+      // Call the callback service and wait for a response
+      const result = await callbackService.createCallbackRequest({
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        preferredTime: formData.preferredDate,
+        message: formData.message
+      });
+      
+      console.log('Callback request successful:', result);
+      
+      // Reset form
       setFormData({
         name: '',
         email: '',
@@ -437,7 +456,22 @@ const Itinerary = () => {
         preferredDate: '',
         message: ''
       });
-    }, 3000);
+      
+      setFormSubmitting(false);
+      setFormSubmitSuccess(true);
+
+      setTimeout(() => {
+        setIsCallbackModalOpen(false);
+        setFormSubmitSuccess(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error submitting callback request:', error);
+      setFormSubmitting(false);
+      // Display a more user-friendly error message
+      setFormSubmitError(
+        'We encountered an issue saving your request. Please try again or contact us directly at support@jetsetgo.com'
+      );
+    }
   };
   
   const handleFocus = (field) => {
@@ -529,7 +563,7 @@ const Itinerary = () => {
             </div>
             <button 
               className="select-room-btn"
-              onClick={() => setShowCallbackPopup(true)}
+              onClick={() => setIsCallbackModalOpen(true)}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
             >
               <FaPhone size={16} /> Request Call Back
@@ -628,10 +662,10 @@ const Itinerary = () => {
       </div>
       
       {/* Callback Request Popup */}
-      {showCallbackPopup && (
+      {isCallbackModalOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setShowCallbackPopup(false)}
+          onClick={() => setIsCallbackModalOpen(false)}
         >
           <div 
             className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-0 relative overflow-hidden animate-fadeIn"
@@ -644,7 +678,7 @@ const Itinerary = () => {
             <div className="bg-gradient-to-r from-[#0066b2] to-[#1e88e5] pt-8 pb-12 px-6 text-white relative">
               <button 
                 className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
-                onClick={() => setShowCallbackPopup(false)}
+                onClick={() => setIsCallbackModalOpen(false)}
                 aria-label="Close popup"
               >
                 <FaTimes size={20} />
@@ -665,7 +699,7 @@ const Itinerary = () => {
             </div>
             
             <div className="px-6 pb-6 pt-4">
-              {formSubmitted ? (
+              {formSubmitSuccess ? (
                 <div className="text-center py-10 px-4 animate-fadeIn" style={{ animation: 'fadeIn 0.5s ease-out' }}>
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <FaCheckCircle className="text-green-500" size={40} />
