@@ -10,6 +10,7 @@ import { hotels, hotelDetails } from "./hotel";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
 import "./styles.css";
+import rentalsCallbackService from "../../../services/rentalsCallbackService";
 
 export default function HotelDetails() {
   const navigate = useNavigate();
@@ -363,18 +364,50 @@ export default function HotelDetails() {
     }));
   };
 
-  const handleCallbackSubmit = (e) => {
+  const handleCallbackSubmit = async (e) => {
     e.preventDefault();
-    // Here you would normally send the callback request to your backend
-    console.log("Callback request submitted:", callbackForm);
-    setCallbackSubmitted(true);
     
-    // After 3 seconds, show the booking confirmation
-    setTimeout(() => {
-      setCallbackSubmitted(false);
-      setShowCallbackRequest(false);
-      setShowBookingConfirmation(true);
-    }, 3000);
+    // Form validation
+    if (!callbackForm.name || !callbackForm.phone) {
+      alert("Please fill in all required fields");
+      return;
+    }
+    
+    try {
+      // Get all the needed data for the callback request
+      const callbackData = {
+        name: callbackForm.name,
+        phone: callbackForm.phone,
+        preferredTime: callbackForm.preferredTime,
+        message: callbackForm.message,
+        hotelName: selectedHotel.name,
+        checkIn: formatDate(checkInDate),
+        checkOut: formatDate(checkOutDate),
+        guests: `${guestCount.adults} adults, ${guestCount.children} children`,
+        roomType: roomTypes[selectedRoom].name,
+        totalPrice: totalPrice
+      };
+      
+      console.log("Submitting rental callback request:", callbackData);
+      
+      // Call the service to store the data in Supabase
+      const result = await rentalsCallbackService.createRentalCallbackRequest(callbackData);
+      
+      console.log("Callback submission result:", result);
+      
+      // Show success message
+      setCallbackSubmitted(true);
+      
+      // After 3 seconds, show the booking confirmation
+      setTimeout(() => {
+        setCallbackSubmitted(false);
+        setShowCallbackRequest(false);
+        setShowBookingConfirmation(true);
+      }, 3000);
+    } catch (error) {
+      console.error("Error submitting callback request:", error);
+      alert("There was an error submitting your request. Please try again.");
+    }
   };
 
   const toggleVirtualTour = () => {
@@ -745,7 +778,7 @@ export default function HotelDetails() {
                         </div>
                       </div>
                     ))}
-                    <button className="bg-white border border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50 transition-colors">
+                    <button className="bg-white border border-blue-600 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
                       Show more reviews
                     </button>
                   </div>

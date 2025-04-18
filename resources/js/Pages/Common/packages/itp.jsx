@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { ChevronDown, MapPin, Calendar, Star, Clock, Users, X, ChevronLeft, ChevronRight } from 'lucide-react'
-import { FaHotel, FaPlane, FaUtensils, FaShieldAlt, FaCheck, FaMapMarkerAlt, FaRegClock, FaUsers, FaStar, FaCalendarAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
+import { FaHotel, FaPlane, FaUtensils, FaShieldAlt, FaCheck, FaMapMarkerAlt, FaRegClock, FaUsers, FaStar, FaCalendarAlt, FaPhoneAlt, FaEnvelope, FaCheckCircle } from "react-icons/fa";
 import itineraryData from '../../../data/itinerarypackages.json'
 import Navbar from '../Navbar'
 import Footer from '../Footer'
+import packageCallbackService from '../../../services/packageCallbackService';
 
 const ItineraryPackage = () => {
   const [selectedPackage, setSelectedPackage] = useState('dubai')
@@ -21,6 +22,9 @@ const ItineraryPackage = () => {
     budget: '500-1000',
     terms: false
   })
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formSubmitSuccess, setFormSubmitSuccess] = useState(false);
+  const [formSubmitError, setFormSubmitError] = useState('');
 
   const packageData = itineraryData[selectedPackage]?.packages[0]
 
@@ -68,9 +72,74 @@ const ItineraryPackage = () => {
     }))
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Form submitted:', formData)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validate form
+    if (!formData.name || !formData.phone || !formData.email) {
+      setFormSubmitError('Please fill in all required fields (Name, Email, Phone)');
+      return;
+    }
+    
+    // Form validation for email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setFormSubmitError('Please enter a valid email address');
+      return;
+    }
+    
+    // Form validation for phone
+    if (formData.phone.length < 10) {
+      setFormSubmitError('Please enter a valid phone number');
+      return;
+    }
+    
+    setFormSubmitting(true);
+    setFormSubmitError('');
+    
+    try {
+      // Call the package callback service to submit the form
+      const result = await packageCallbackService.createPackageCallbackRequest({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        travelDate: formData.travelDate || null,
+        guests: formData.guests || '2',
+        budget: formData.budget || '500-1000',
+        request: formData.request || '',
+        packageName: 'Dubai Explorer' // Default package name
+      });
+      
+      console.log('Form submission result:', result);
+      
+      // Reset form on success
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        request: '',
+        isRobot: false,
+        travelDate: '',
+        guests: '2',
+        budget: '500-1000',
+        terms: false
+      });
+      
+      setFormSubmitting(false);
+      setFormSubmitSuccess(true);
+      
+      // Close modal after successful submission with a delay
+      setTimeout(() => {
+        setFormSubmitSuccess(false);
+        setShowQuoteModal(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setFormSubmitting(false);
+      setFormSubmitError(
+        'We encountered an issue saving your request. Please try again or contact us directly.'
+      );
+    }
   }
 
   if (!packageData) return null
@@ -520,159 +589,166 @@ const ItineraryPackage = () => {
                 </div>
                 
                 {/* Form with improved design */}
-                <form onSubmit={handleSubmit} className="space-y-3">
-                  <div className="space-y-3">
-                    {/* Full Name, Email, Phone */}
-                    <div className="grid grid-cols-1 gap-3">
-                      <div className="relative">
-                        <input
-                          id="name"
-                          type="text"
-                          name="name"
-                          placeholder="Full Name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
-                        />
-                        <div className="absolute left-3 top-2.5 text-gray-400">
-                          <Users size={15} />
-                        </div>
-                      </div>
-                      
-                      <div className="relative">
-                        <input
-                          id="email"
-                          type="email"
-                          name="email"
-                          placeholder="Email Address"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
-                        />
-                        <div className="absolute left-3 top-2.5 text-gray-400">
-                          <FaEnvelope size={14} />
-                        </div>
-                      </div>
-                      
-                      <div className="relative">
-                        <input
-                          id="phone"
-                          type="tel"
-                          name="phone"
-                          placeholder="Phone Number"
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
-                        />
-                        <div className="absolute left-3 top-2.5 text-gray-400">
-                          <FaPhoneAlt size={14} />
-                        </div>
-                      </div>
+                {formSubmitSuccess ? (
+                  <div className="text-center py-10 px-4">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <FaCheckCircle className="text-green-500" size={40} />
                     </div>
-
-                    {/* Travel Info */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="relative">
-                        <input
-                          id="travelDate"
-                          type="date"
-                          name="travelDate"
-                          value={formData.travelDate || ""}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
-                        />
-                        <div className="absolute left-3 top-2.5 text-gray-400">
-                          <Calendar size={15} />
-                        </div>
-                      </div>
-                      
-                      <div className="relative">
-                        <select
-                          id="guests"
-                          name="guests"
-                          value={formData.guests || "2"}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100 appearance-none"
-                        >
-                          <option value="1">1 Person</option>
-                          <option value="2">2 People</option>
-                          <option value="3">3 People</option>
-                          <option value="4+">4+ People</option>
-                        </select>
-                        <div className="absolute left-3 top-2.5 text-gray-400">
-                          <Users size={15} />
-                        </div>
-                        <div className="absolute right-3 top-2.5 text-gray-400">
-                          <ChevronDown size={15} />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Special Requests */}
-                    <div className="relative">
-                      <textarea
-                        id="request"
-                        name="request"
-                        rows="2"
-                        placeholder="Special requests or questions"
-                        value={formData.request}
-                        onChange={handleInputChange}
-                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100 resize-none"
-                      />
-                      <div className="absolute left-3 top-2.5 text-gray-400">
-                        <FaShieldAlt size={14} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Terms Checkbox */}
-                  <div className="flex items-start gap-2">
-                    <input
-                      id="terms"
-                      name="terms"
-                      type="checkbox"
-                      checked={formData.terms || false}
-                      onChange={handleInputChange}
-                      className="mt-0.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                    />
-                    <label htmlFor="terms" className="text-xs text-gray-500 flex-1">
-                      I agree to receive promotional emails about special offers from JetSetters
-                    </label>
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow-sm text-sm flex items-center justify-center gap-1"
-                    >
-                      <span>Get Quote</span>
-                      <ChevronRight size={16} />
-                    </button>
-                    
-                    <p className="text-[10px] text-center text-gray-400 mt-2">
-                      A travel expert will contact you within 24 hours
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Thank You!</h3>
+                    <p className="text-gray-600">
+                      Your quote request has been submitted successfully. Our travel experts will contact you within 24 hours.
                     </p>
                   </div>
-                </form>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-3">
+                    {formSubmitError && (
+                      <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+                        {formSubmitError}
+                      </div>
+                    )}
+                    
+                    <div className="space-y-3">
+                      {/* Full Name, Email, Phone */}
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="relative">
+                          <input
+                            id="name"
+                            type="text"
+                            name="name"
+                            placeholder="Full Name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
+                          />
+                          <div className="absolute left-3 top-2.5 text-gray-400">
+                            <Users size={15} />
+                          </div>
+                        </div>
+                        
+                        <div className="relative">
+                          <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            placeholder="Email Address"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
+                          />
+                          <div className="absolute left-3 top-2.5 text-gray-400">
+                            <FaEnvelope size={14} />
+                          </div>
+                        </div>
+                        
+                        <div className="relative">
+                          <input
+                            id="phone"
+                            type="tel"
+                            name="phone"
+                            placeholder="Phone Number"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
+                          />
+                          <div className="absolute left-3 top-2.5 text-gray-400">
+                            <FaPhoneAlt size={14} />
+                          </div>
+                        </div>
+                      </div>
 
-                {/* Trust Indicators */}
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="text-xs text-gray-500 flex items-center">
-                      <FaShieldAlt className="text-green-500 mr-1" size={10} />
-                      <span>Secure</span>
+                      {/* Travel Info */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="relative">
+                          <input
+                            id="travelDate"
+                            type="date"
+                            name="travelDate"
+                            value={formData.travelDate || ""}
+                            onChange={handleInputChange}
+                            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
+                          />
+                          <div className="absolute left-3 top-2.5 text-gray-400">
+                            <Calendar size={15} />
+                          </div>
+                        </div>
+                        
+                        <div className="relative">
+                          <select
+                            id="guests"
+                            name="guests"
+                            value={formData.guests || "2"}
+                            onChange={handleInputChange}
+                            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100 appearance-none"
+                          >
+                            <option value="1">1 Person</option>
+                            <option value="2">2 People</option>
+                            <option value="3">3 People</option>
+                            <option value="4+">4+ People</option>
+                          </select>
+                          <div className="absolute left-3 top-2.5 text-gray-400">
+                            <Users size={15} />
+                          </div>
+                          <div className="absolute right-3 top-2.5 text-gray-400">
+                            <ChevronDown size={15} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Special Requests */}
+                      <div className="relative">
+                        <textarea
+                          id="request"
+                          name="request"
+                          rows="2"
+                          placeholder="Special requests or questions"
+                          value={formData.request}
+                          onChange={handleInputChange}
+                          className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100 resize-none"
+                        />
+                        <div className="absolute left-3 top-2.5 text-gray-400">
+                          <FaShieldAlt size={14} />
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 flex items-center">
-                      <FaCheck className="text-green-500 mr-1" size={10} />
-                      <span>Trusted</span>
+
+                    {/* Terms Checkbox */}
+                    <div className="flex items-start gap-2">
+                      <input
+                        id="terms"
+                        name="terms"
+                        type="checkbox"
+                        checked={formData.terms || false}
+                        onChange={handleInputChange}
+                        className="mt-0.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                      />
+                      <label htmlFor="terms" className="text-xs text-gray-500 flex-1">
+                        I agree to receive promotional emails about special offers from JetSetters
+                      </label>
                     </div>
-                    <div className="text-xs text-gray-500 flex items-center">
-                      <FaStar className="text-yellow-500 mr-1" size={10} />
-                      <span>5-Star Rated</span>
+
+                    {/* Submit Button */}
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={formSubmitting}
+                        className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow-sm text-sm flex items-center justify-center gap-1"
+                      >
+                        {formSubmitting ? (
+                          <span>Processing...</span>
+                        ) : (
+                          <>
+                            <span>Get Quote</span>
+                            <ChevronRight size={16} />
+                          </>
+                        )}
+                      </button>
+                      
+                      <p className="text-[10px] text-center text-gray-400 mt-2">
+                        A travel expert will contact you within 24 hours
+                      </p>
                     </div>
-                  </div>
-                </div>
+                  </form>
+                )}
               </div>
             </div>
           </div>
