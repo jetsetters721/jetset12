@@ -53,7 +53,13 @@ const callbackService = {
       // Send confirmation email using direct endpoint
       try {
         console.log('Sending confirmation email via direct endpoint');
-        const emailResponse = await fetch('/api/send-email', {
+        
+        // Get the base URL dynamically for production support
+        const baseUrl = import.meta.env.PROD 
+          ? window.location.origin 
+          : 'http://localhost:5001';
+        
+        const emailResponse = await fetch(`${baseUrl}/api/send-email`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -62,7 +68,12 @@ const callbackService = {
             name: callbackData.name, 
             phone: callbackData.phone,
             email: callbackData.email,
-            type: 'cruise'
+            type: 'cruise',
+            // Include cruise-specific details
+            details: {
+              preferredTime: callbackData.preferredTime,
+              message: callbackData.message
+            }
           })
         });
         

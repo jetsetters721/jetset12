@@ -51,7 +51,13 @@ const packageCallbackService = {
       // Send confirmation email using direct endpoint
       try {
         console.log('Sending package confirmation email via direct endpoint');
-        const emailResponse = await fetch('/api/send-email', {
+        
+        // Get the base URL dynamically for production support
+        const baseUrl = import.meta.env.PROD 
+          ? window.location.origin 
+          : 'http://localhost:5001';
+        
+        const emailResponse = await fetch(`${baseUrl}/api/send-email`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
