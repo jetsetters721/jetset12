@@ -49,6 +49,35 @@ const callbackService = {
       }
       
       console.log('Callback request successfully created!');
+      
+      // Send confirmation email using direct endpoint
+      try {
+        console.log('Sending confirmation email via direct endpoint');
+        const emailResponse = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            name: callbackData.name, 
+            phone: callbackData.phone,
+            email: callbackData.email,
+            type: 'cruise'
+          })
+        });
+        
+        if (!emailResponse.ok) {
+          const emailError = await emailResponse.text();
+          console.warn('Email confirmation issue:', emailError);
+        } else {
+          const emailResult = await emailResponse.json();
+          console.log('Email sent successfully:', emailResult);
+        }
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+        // Continue despite email error - we don't want to fail the callback submission
+      }
+      
       return { success: true };
     } catch (error) {
       console.error('Unexpected error in createCallbackRequest:', error);

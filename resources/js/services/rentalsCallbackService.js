@@ -49,6 +49,45 @@ const rentalsCallbackService = {
       }
       
       console.log('Rental callback request successfully created!');
+      
+      // Send confirmation email using direct endpoint
+      try {
+        console.log('Sending rental confirmation email via direct endpoint');
+        const emailResponse = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            name: rentalData.name, 
+            phone: rentalData.phone,
+            email: rentalData.email || `${rentalData.phone.replace(/\D/g, '')}@example.com`,
+            type: 'rental',
+            details: {
+              hotelName: rentalData.hotelName,
+              checkIn: rentalData.checkIn,
+              checkOut: rentalData.checkOut,
+              guests: rentalData.guests,
+              roomType: rentalData.roomType,
+              totalPrice: rentalData.totalPrice,
+              preferredTime: rentalData.preferredTime,
+              message: rentalData.message
+            }
+          })
+        });
+        
+        if (!emailResponse.ok) {
+          const emailError = await emailResponse.text();
+          console.warn('Rental email confirmation issue:', emailError);
+        } else {
+          const emailResult = await emailResponse.json();
+          console.log('Rental email sent successfully:', emailResult);
+        }
+      } catch (emailError) {
+        console.error('Error sending rental confirmation email:', emailError);
+        // Continue despite email error - we don't want to fail the callback submission
+      }
+      
       return { success: true };
     } catch (error) {
       console.error('Unexpected error in createRentalCallbackRequest:', error);

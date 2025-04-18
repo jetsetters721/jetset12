@@ -47,6 +47,43 @@ const packageCallbackService = {
       }
       
       console.log('Package callback request successfully created!');
+      
+      // Send confirmation email using direct endpoint
+      try {
+        console.log('Sending package confirmation email via direct endpoint');
+        const emailResponse = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            name: packageData.name, 
+            phone: packageData.phone,
+            email: packageData.email,
+            type: 'package',
+            // Include additional package details in a format the email can display
+            details: {
+              packageName: packageData.packageName,
+              travelDate: packageData.travelDate,
+              guests: packageData.guests,
+              budget: packageData.budget,
+              request: packageData.request
+            }
+          })
+        });
+        
+        if (!emailResponse.ok) {
+          const emailError = await emailResponse.text();
+          console.warn('Package email confirmation issue:', emailError);
+        } else {
+          const emailResult = await emailResponse.json();
+          console.log('Package email sent successfully:', emailResult);
+        }
+      } catch (emailError) {
+        console.error('Error sending package confirmation email:', emailError);
+        // Continue despite email error - we don't want to fail the callback submission
+      }
+      
       return { success: true };
     } catch (error) {
       console.error('Unexpected error in createPackageCallbackRequest:', error);

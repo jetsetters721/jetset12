@@ -2,6 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes.js';
+import hotelRoutes from './routes/hotel.routes.js';
+import flightRoutes from './routes/flight.routes.js';
+import cruiseRoutes from './routes/cruise.routes.js';
+import emailRoutes from './routes/email.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -20,7 +24,7 @@ app.use((req, res, next) => {
 
 // CORS configuration
 const corsOptions = {
-  origin: '*', // Allow all origins during development
+  origin: process.env.CORS_ORIGIN || ['http://localhost:5173', 'http://127.0.0.1:5173'], // Allow frontend origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -48,6 +52,10 @@ app.get('/api/test', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/hotels', hotelRoutes);
+app.use('/api/flights', flightRoutes);
+app.use('/api/cruises', cruiseRoutes);
+app.use('/api/email', emailRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
