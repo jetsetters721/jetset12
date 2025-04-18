@@ -1,0 +1,50 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "server.js",
+            "use": "@vercel/node"
+        },
+        {
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/assets/(.*)",
+            "headers": {
+                "cache-control": "public, max-age=31536000, immutable"
+            },
+            "dest": "/assets/$1"
+        },
+        {
+            "src": "/(.*)\\.(js|css|json|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$",
+            "headers": {
+                "cache-control": "public, max-age=31536000, immutable"
+            },
+            "dest": "/$1"
+        },
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/index.html"
+        }
+    ],
+    "env": {
+        "NODE_ENV": "production",
+        "JWT_EXPIRE": "30d"
+    },
+    "build": {
+        "env": {
+            "VITE_APP_NAME": "JetSet App",
+            "VITE_API_URL": "/api"
+        }
+    }
+}

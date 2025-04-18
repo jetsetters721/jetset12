@@ -1,0 +1,125 @@
+{
+    "destinations": [
+      {
+        "id": 1,
+        "name": "Vancouver BC",
+        "price": 64,
+        "rating": 5.0,
+        "image": "/images/Rectangle 1434 (1).png",
+        "country": "Canada",
+        "category": "Cities",
+        "tags": ["Urban", "Nature", "Waterfront"],
+        "duration": "3-5 days",
+        "season": "All Year"
+      },
+      {
+        "id": 2,
+        "name": "Bali",
+        "price": 89,
+        "rating": 4.8,
+        "image": "/images/Rectangle 1434 (2).png",
+        "country": "Indonesia",
+        "category": "Beach",
+        "tags": ["Tropical", "Culture", "Beach"],
+        "duration": "7-10 days",
+        "season": "Dry Season"
+      },
+      {
+        "id": 3,
+        "name": "Swiss Alps",
+        "price": 120,
+        "rating": 4.9,
+        "image": "/images/Rectangle 1434 (3).png",
+        "country": "Switzerland",
+        "category": "Mountains",
+        "tags": ["Winter Sports", "Hiking", "Scenic"],
+        "duration": "5-7 days",
+        "season": "Winter"
+      },
+      {
+        "id": 4,
+        "name": "Tokyo",
+        "price": 95,
+        "rating": 4.9,
+        "image": "/images/Rectangle 1434 (4).png",
+        "country": "Japan",
+        "category": "Cities",
+        "tags": ["Urban", "Culture", "Food"],
+        "duration": "7-10 days",
+        "season": "Spring"
+      },
+      {
+        "id": 5,
+        "name": "Santorini",
+        "price": 110,
+        "rating": 4.7,
+        "image": "/images/Rectangle 1434 (5).png",
+        "country": "Greece",
+        "category": "Islands",
+        "tags": ["Beach", "Romance", "Culture"],
+        "duration": "4-6 days",
+        "season": "Summer"
+      },
+      {
+        "id": 6,
+        "name": "Machu Picchu",
+        "price": 150,
+        "rating": 4.9,
+        "image": "/images/Rectangle 1434.png",
+        "country": "Peru",
+        "category": "Historic",
+        "tags": ["Adventure", "Culture", "Hiking"],
+        "duration": "5-7 days",
+        "season": "Dry Season"
+      },
+      {
+        "id": 7,
+        "name": "San Diego",
+        "price": 77,
+        "rating": 5.0,
+        "image": "/images/Rectangle 1434 (1).png",
+        "country": "USA",
+        "category": "Beach",
+        "tags": ["Urban", "Beach", "Waterfront"],
+        "duration": "4-6 days",
+        "season": "All Year"
+      },
+      {
+        "id": 8,
+        "name": "Barcelona",
+        "price": 105,
+        "rating": 4.8,
+        "image": "/images/Rectangle 1434 (2).png",
+        "country": "Spain",
+        "category": "Cities",
+        "tags": ["Urban", "Culture", "Beach"],
+        "duration": "5-7 days",
+        "season": "Summer"
+      },
+      {
+        "id": 9,
+        "name": "Maldives",
+        "price": 180,
+        "rating": 5.0,
+        "image": "/images/Rectangle 1434 (3).png",
+        "country": "Maldives",
+        "category": "Islands",
+        "tags": ["Beach", "Tropical", "Romance"],
+        "duration": "7-10 days",
+        "season": "Dry Season"
+      }
+    ],
+    "categories": [
+      "All",
+      "Cities",
+      "Beach",
+      "Mountains",
+      "Islands",
+      "Historic"
+    ],
+    "filters": {
+      "duration": ["3-5 days", "4-6 days", "5-7 days", "7-10 days"],
+      "season": ["All Year", "Summer", "Winter", "Spring", "Dry Season"],
+      "tags": ["Urban", "Nature", "Beach", "Culture", "Adventure", "Food", "Hiking", "Romance", "Scenic", "Tropical", "Winter Sports"]
+    }
+  }

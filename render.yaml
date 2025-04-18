@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: jetset-app
+    env: node
+    buildCommand: npm run render-build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE
+        value: 30d
+      - key: DB_DATABASE
+        value: /data/database.sqlite
+      - key: VITE_API_URL
+        value: /api
+      - key: VITE_APP_NAME
+        value: "JetSet App"
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+
+databases:
+  - name: new-app-db
+    plan: free
+    databaseName: new_app
+    user: new_app_user
