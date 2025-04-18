@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './HeroSection.css';
 import { FaMapMarkerAlt, FaCalendarAlt, FaShip, FaAnchor, FaDollarSign, FaSearch, FaStar, FaArrowRight, FaChevronRight, FaAngleDown } from 'react-icons/fa';
 import cruiseData from './data/cruiselines.json';
 import destinationsData from './data/destinations.json';
+import { Search, MapPin, Calendar, DollarSign, ChevronDown, Anchor, Ship, Navigation } from 'lucide-react';
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -30,6 +31,16 @@ const HeroSection = () => {
   ]);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredDestinations, setFilteredDestinations] = useState([]);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
+  const [selectedPackageType, setSelectedPackageType] = useState('All Inclusive');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [priceRange, setPriceRange] = useState('Any Price');
+  const [displayedMonth, setDisplayedMonth] = useState(new Date().getMonth()); 
+  const [displayedYear, setDisplayedYear] = useState(new Date().getFullYear());
+  const datepickerRef = useRef(null);
 
   useEffect(() => {
     // Extract cruise lines and unique destinations from the JSON data
@@ -89,6 +100,24 @@ const HeroSection = () => {
       setActiveField(null);
     }, 200);
   };
+  
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (activeField && !event.target.closest('.search-item')) {
+        setActiveField(null);
+      }
+      
+      if (showDestinationSuggestions && !event.target.closest('.search-field')) {
+        setShowDestinationSuggestions(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [activeField, showDestinationSuggestions]);
 
   const handleQuickSelect = (value, field) => {
     setSearchValues({
@@ -148,6 +177,19 @@ const HeroSection = () => {
     setActiveField(null);
   };
 
+  // Generate calendar days for the currently displayed month
+  const generateCalendarDays = () => {
+    const daysInMonth = new Date(displayedYear, displayedMonth + 1, 0).getDate();
+    const firstDayOfMonth = new Date(displayedYear, displayedMonth, 1).getDay();
+    let days = Array(firstDayOfMonth).fill(null);
+    
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(i);
+    }
+    
+    return days;
+  };
+  
   const handleSearch = (e) => {
     e.preventDefault();
     setIsSearching(true);
@@ -228,343 +270,253 @@ const HeroSection = () => {
   };
 
   return (
-    <>
-      <section 
-        className={`hero-section ${scrolled ? 'scrolled' : ''}`}
+    <section className="hero-section">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url(/cruise/2.png)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
+          backgroundImage: "url('https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=2064&auto=format&fit=crop')",
         }}
       >
-        <div className="floating-shape shape-1"></div>
-        <div className="floating-shape shape-3"></div>
-        
-        <div className="hero-content container" style={{ textAlign: 'left', maxWidth: '1100px', marginLeft: '8%' }}>
-          <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <h2 className="subtitle">Discover Luxury at Sea</h2>
-            <h1 className="title">Your Dream Cruise<br />Adventure Awaits</h1>
-            <div className="highlight-badge">
-              <FaStar className="star-icon" />
-              <span>Award-winning cruise experiences</span>
-            </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/60"></div>
+      </div>
+
+      {/* Content Container */}
+      <div className="container relative z-10 mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        {/* Hero Text */}
+        <div className="text-center mb-12 space-y-4">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-4">
+            <Ship className="w-4 h-4 text-blue-400 mr-2" />
+            <span className="text-white/90 text-sm font-medium">Luxury Cruise Experiences</span>
           </div>
           
-          <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <div className="search-bar-wrapper">
-              <div className={`search-bar ${activeField ? 'active' : ''} ${isSearching ? 'searching' : ''}`}>
-                <div className="search-items">
-                  <div className={`search-item ${activeField === 'location' ? 'active' : ''}`}>
-                    <div className="icon-label">
-                      <FaMapMarkerAlt className={activeField === 'location' ? 'active-icon' : ''} />
-                      <span>Location</span>
-                    </div>
-                    <div className="select-wrapper">
-                      <input 
-                        type="text" 
-                        placeholder="Select destination"
-                        value={searchValues.location}
-                        onClick={() => handleFocus('location')}
-                        onBlur={handleBlur}
-                        readOnly
-                      />
-                      <FaAngleDown className="dropdown-icon" />
-                    </div>
-                    {activeField === 'location' && (
-                      <div className="dropdown-suggestions">
-                        <p className="suggestion-title">Popular Destinations</p>
-                        <div className="suggestion-items">
-                          {getAvailableDestinations().map((dest, index) => (
-                            <div 
-                              key={index} 
-                              className="suggestion-item"
-                              onClick={() => handleQuickSelect(dest, 'location')}
-                            >
-                              <FaMapMarkerAlt className="suggestion-icon" />
-                              <span>{dest}</span>
-                            </div>
-                          ))}
-                          {getAvailableDestinations().length === 0 && (
-                            <div className="suggestion-empty">No destinations available for the selected criteria</div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight">
+            Discover Your Perfect
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+              Cruise Adventure
+            </span>
+          </h1>
+          
+          <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+            Explore the world's most breathtaking destinations with our handpicked selection of luxury cruise packages
+          </p>
+        </div>
 
-                  <div className="divider"></div>
-
-                  <div className={`search-item ${activeField === 'date' ? 'active' : ''}`}>
-                    <div className="icon-label">
-                      <FaCalendarAlt className={activeField === 'date' ? 'active-icon' : ''} />
-                      <span>Date</span>
-                    </div>
-                    <div className="select-wrapper">
-                      <input 
-                        type="text" 
-                        placeholder="Select date"
-                        value={searchValues.date}
-                        onClick={() => handleFocus('date')}
-                        onBlur={handleBlur}
-                        readOnly
-                      />
-                      <FaAngleDown className="dropdown-icon" />
-                    </div>
-                    {activeField === 'date' && (
-                      <div className="dropdown-suggestions">
-                        <p className="suggestion-title">Select Month and Year</p>
-                        <div className="date-selector">
-                          <div className="date-column">
-                            <p className="date-column-title">Month</p>
-                            <div className="date-options">
-                              {availableMonths.map((month, index) => (
-                                <div 
-                                  key={index} 
-                                  className="date-option"
-                                  onClick={() => {
-                                    const year = searchValues.date.split(' ')[1] || availableYears[0];
-                                    handleSelectDate(month, year);
-                                  }}
-                                >
-                                  {month}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="date-column">
-                            <p className="date-column-title">Year</p>
-                            <div className="date-options">
-                              {availableYears.map((year, index) => (
-                                <div 
-                                  key={index} 
-                                  className="date-option"
-                                  onClick={() => {
-                                    const month = searchValues.date.split(' ')[0] || availableMonths[0];
-                                    handleSelectDate(month, year);
-                                  }}
-                                >
-                                  {year}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="divider"></div>
-
-                  <div className={`search-item ${activeField === 'cruiseLine' ? 'active' : ''}`}>
-                    <div className="icon-label">
-                      <FaShip className={activeField === 'cruiseLine' ? 'active-icon' : ''} />
-                      <span>Cruiseline</span>
-                    </div>
-                    <div className="select-wrapper">
-                      <input 
-                        type="text" 
-                        placeholder="Select cruise line"
-                        value={searchValues.cruiseLine}
-                        onClick={() => handleFocus('cruiseLine')}
-                        onBlur={handleBlur}
-                        readOnly
-                      />
-                      <FaAngleDown className="dropdown-icon" />
-                    </div>
-                    {activeField === 'cruiseLine' && (
-                      <div className="dropdown-suggestions">
-                        <p className="suggestion-title">Cruise Lines</p>
-                        <div className="cruise-lines-list">
-                          {getAvailableCruiseLines().map((line, index) => (
-                            <div 
-                              key={index} 
-                              className="cruise-line-item"
-                              onClick={() => handleQuickSelect(line.name, 'cruiseLine')}
-                            >
-                              <div className="cruise-line-icon">
-                                <FaShip className="suggestion-icon" />
-                              </div>
-                              <div className="cruise-line-info">
-                                <span className="cruise-line-name">{line.name}</span>
-                                <span className="cruise-line-desc">{line.description}</span>
-                              </div>
-                              <div className="cruise-line-price">{line.price}</div>
-                            </div>
-                          ))}
-                          {getAvailableCruiseLines().length === 0 && (
-                            <div className="suggestion-empty">No cruise lines available for the selected criteria</div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="divider"></div>
-
-                  <div className={`search-item ${activeField === 'departure' ? 'active' : ''}`}>
-                    <div className="icon-label">
-                      <FaAnchor className={activeField === 'departure' ? 'active-icon' : ''} />
-                      <span>Departure</span>
-                    </div>
-                    <div className="select-wrapper">
-                      <input 
-                        type="text" 
-                        placeholder="Select port"
-                        value={searchValues.departure}
-                        onClick={() => handleFocus('departure')}
-                        onBlur={handleBlur}
-                        readOnly
-                      />
-                      <FaAngleDown className="dropdown-icon" />
-                    </div>
-                    {activeField === 'departure' && (
-                      <div className="dropdown-suggestions">
-                        <p className="suggestion-title">Departure Ports</p>
-                        <div className="suggestion-items">
-                          {departurePorts.map((port, index) => (
-                            <div 
-                              key={index} 
-                              className="suggestion-item"
-                              onClick={() => handleQuickSelect(port, 'departure')}
-                            >
-                              <FaAnchor className="suggestion-icon" />
-                              <span>{port}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="divider"></div>
-
-                  <div className={`search-item ${activeField === 'price' ? 'active' : ''}`}>
-                    <div className="icon-label">
-                      <FaDollarSign className={activeField === 'price' ? 'active-icon' : ''} />
-                      <span>Price</span>
-                    </div>
-                    <div className="select-wrapper">
-                      <input 
-                        type="text" 
-                        placeholder="Select price range"
-                        value={searchValues.price}
-                        onClick={() => handleFocus('price')}
-                        onBlur={handleBlur}
-                        readOnly
-                      />
-                      <FaAngleDown className="dropdown-icon" />
-                    </div>
-                    {activeField === 'price' && (
-                      <div className="dropdown-suggestions">
-                        <p className="suggestion-title">Price Ranges</p>
-                        <div className="suggestion-items">
-                          {priceRanges.map((range, index) => (
-                            <div 
-                              key={index} 
-                              className="suggestion-item"
-                              onClick={() => handleQuickSelect(range, 'price')}
-                            >
-                              <FaDollarSign className="suggestion-icon" />
-                              <span>{range}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <button 
-                  onClick={handleSearch} 
-                  className={`search-button ${isSearching ? 'searching' : ''}`}
-                  disabled={isSearching}
-                >
-                  <div className="search-button-content">
-                    {isSearching ? 
-                      <div className="search-spinner"></div> : 
-                      <FaSearch className="search-icon" />
+        {/* Search Form */}
+        <div className="max-w-6xl mx-auto">
+          <form onSubmit={handleSearch} className="search-container">
+            <div className="search-grid">
+              {/* Destination */}
+              <div className="search-field relative">
+                <label className="search-label">
+                  <MapPin className="search-icon" />
+                  <span>Destination</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Where would you like to go?"
+                  className="search-input"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    const query = e.target.value;
+                    setSearchQuery(query);
+                    
+                    // Filter destinations based on input
+                    if (query.length > 0) {
+                      const filtered = destinations.filter(dest => 
+                        dest.toLowerCase().includes(query.toLowerCase())
+                      );
+                      setFilteredDestinations(filtered);
+                      setShowDestinationSuggestions(true);
+                    } else {
+                      setShowDestinationSuggestions(false);
                     }
-                    <span>{isSearching ? 'Searching...' : 'Find Cruises'}</span>
+                  }}
+                  onFocus={() => {
+                    if (searchQuery.length > 0) {
+                      setShowDestinationSuggestions(true);
+                    }
+                  }}
+                />
+                
+                {/* Destination Suggestions */}
+                {showDestinationSuggestions && filteredDestinations.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-xl shadow-xl z-30 mt-2 max-h-64 overflow-y-auto">
+                    <ul className="py-2">
+                      {filteredDestinations.map((destination, index) => (
+                        <li 
+                          key={index}
+                          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
+                          onClick={() => {
+                            setSearchQuery(destination);
+                            setShowDestinationSuggestions(false);
+                          }}
+                        >
+                          <div className="flex items-center">
+                            <MapPin className="h-4 w-4 text-blue-600 mr-2" />
+                            <span>{destination}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <div className="search-button-hover">
-                    <FaChevronRight className="arrow-icon" />
+                )}
+              </div>
+
+              {/* Cruise Type */}
+              <div className="search-field">
+                <label className="search-label">
+                  <Anchor className="search-icon" />
+                  <span>Cruise Type</span>
+                </label>
+                <select
+                  className="search-input"
+                  value={selectedPackageType}
+                  onChange={(e) => setSelectedPackageType(e.target.value)}
+                >
+                  <option value="All Inclusive">All Inclusive</option>
+                  <option value="Luxury">Luxury Cruise</option>
+                  <option value="Adventure">Adventure Cruise</option>
+                  <option value="Family">Family Cruise</option>
+                  <option value="Romantic">Romantic Getaway</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 text-gray-400 pointer-events-none" size={16} />
+              </div>
+
+              {/* Date */}
+              <div className="search-field relative">
+                <label className="search-label">
+                  <Calendar className="search-icon" />
+                  <span>Travel Date</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Select dates"
+                  className="search-input"
+                  value={selectedDate}
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  readOnly
+                />
+                
+                {/* Date Picker Popup */}
+                {showDatePicker && (
+                  <div 
+                    ref={datepickerRef}
+                    className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-xl shadow-xl z-30 p-4 mt-2 w-full"
+                  >
+                    <div className="flex justify-between items-center mb-4">
+                      <button 
+                        onClick={() => {
+                          if (displayedMonth === 0) {
+                            setDisplayedMonth(11);
+                            setDisplayedYear(displayedYear - 1);
+                          } else {
+                            setDisplayedMonth(displayedMonth - 1);
+                          }
+                        }}
+                        className="p-1 rounded-full hover:bg-gray-100"
+                        type="button"
+                      >
+                        <ChevronDown className="h-5 w-5 text-gray-600 rotate-90" />
+                      </button>
+                      <h3 className="font-medium">{availableMonths[displayedMonth]} {displayedYear}</h3>
+                      <button 
+                        onClick={() => {
+                          if (displayedMonth === 11) {
+                            setDisplayedMonth(0);
+                            setDisplayedYear(displayedYear + 1);
+                          } else {
+                            setDisplayedMonth(displayedMonth + 1);
+                          }
+                        }}
+                        className="p-1 rounded-full hover:bg-gray-100"
+                        type="button"
+                      >
+                        <ChevronDown className="h-5 w-5 text-gray-600 -rotate-90" />
+                      </button>
+                    </div>
+                    
+                    <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-2">
+                      <div>Su</div>
+                      <div>Mo</div>
+                      <div>Tu</div>
+                      <div>We</div>
+                      <div>Th</div>
+                      <div>Fr</div>
+                      <div>Sa</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-7 gap-1">
+                      {generateCalendarDays().map((day, index) => {
+                        const date = day !== null ? new Date(displayedYear, displayedMonth, day) : null;
+                        const isToday = date && new Date().toDateString() === date.toDateString();
+                        const isDisabled = date && date < new Date().setHours(0, 0, 0, 0);
+                        
+                        return (
+                          <div 
+                            key={index}
+                            onClick={() => {
+                              if (day !== null && !isDisabled) {
+                                const newDate = new Date(displayedYear, displayedMonth, day);
+                                setSelectedDate(`${availableMonths[displayedMonth]} ${day}, ${displayedYear}`);
+                                setShowDatePicker(false);
+                              }
+                            }}
+                            className={`
+                              h-10 w-full flex items-center justify-center rounded-full text-sm
+                              ${day === null ? 'cursor-default' : isDisabled ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100'}
+                              ${isToday ? 'border border-gray-300' : ''}
+                            `}
+                          >
+                            {day}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    <div className="mt-4 flex justify-end">
+                      <button 
+                        onClick={() => setShowDatePicker(false)}
+                        className="px-4 py-2 bg-[#0061ff] text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                        type="button"
+                      >
+                        Done
+                      </button>
+                    </div>
                   </div>
-                </button>
+                )}
+              </div>
+
+              {/* Price Range */}
+              <div className="search-field">
+                <label className="search-label">
+                  <DollarSign className="search-icon" />
+                  <span>Budget</span>
+                </label>
+                <select
+                  className="search-input"
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(e.target.value)}
+                >
+                  <option value="Any Price">Any Price</option>
+                  <option value="0-1000">$0 - $1,000</option>
+                  <option value="1000-2000">$1,000 - $2,000</option>
+                  <option value="2000-5000">$2,000 - $5,000</option>
+                  <option value="5000+">$5,000+</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 text-gray-400 pointer-events-none" size={16} />
               </div>
             </div>
-          </div>
 
-          <div className="animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            <div className="filter-section">
-              <div className="filter-labels">
-                <span className="filter-label">Popular filters:</span>
-              </div>
-              <div className="filter-tags">
-                <button 
-                  className={`filter-tag ${searchValues.cruiseLine === 'Royal Caribbean' ? 'active' : ''}`}
-                  onClick={() => handleQuickSelect('Royal Caribbean', 'cruiseLine')}
-                >
-                  <span className="tag-dot"></span>
-                  Royal Caribbean
-                </button>
-                <button 
-                  className={`filter-tag ${searchValues.location === 'Caribbean' ? 'active' : ''}`}
-                  onClick={() => handleQuickSelect('Caribbean', 'location')}
-                >
-                  <span className="tag-dot"></span>
-                  Caribbean
-                </button>
-                <button 
-                  className={`filter-tag ${searchValues.location === 'Mediterranean' ? 'active' : ''}`}
-                  onClick={() => handleQuickSelect('Mediterranean', 'location')}
-                >
-                  <span className="tag-dot"></span>
-                  Mediterranean
-                </button>
-                <button 
-                  className={`filter-tag ${searchValues.price === '$1000-$1500' ? 'active' : ''}`}
-                  onClick={() => handleQuickSelect('$1000-$1500', 'price')}
-                >
-                  <span className="tag-dot"></span>
-                  $1000-$1500
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="animate-fade-in-up hero-book-now-wrapper" style={{ animationDelay: '1s' }}>
-            <Link to="/cruises" onClick={(e) => {
-              e.preventDefault();
-              navigate('/cruises');
-            }} className="hero-book-now">
-              <span>EXPLORE CRUISES</span>
-              <FaArrowRight className="ml-2" />
-            </Link>
-          </div>
+            {/* Search Button */}
+            <button type="submit" className="search-submit">
+              <Search className="w-5 h-5 mr-2" />
+              <span>Search Cruises</span>
+            </button>
+          </form>
         </div>
-      </section>
-
-      {/* Marketing stats section moved below hero section */}
-      <section className="stats-section">
-        <div className="container">
-          <div className="stats-container">
-            <div className="stat-box">
-              <div className="stat-number">500+</div>
-              <div className="stat-label">Cruise Itineraries</div>
-            </div>
-            <div className="stat-box">
-              <div className="stat-number">20+</div>
-              <div className="stat-label">Cruise Lines</div>
-            </div>
-            <div className="stat-box">
-              <div className="stat-number">100%</div>
-              <div className="stat-label">Satisfaction</div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 };
 

@@ -11,7 +11,7 @@ import supabase from './backend/config/supabase.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Get directory name
 const __filename = fileURLToPath(import.meta.url);
@@ -24,9 +24,17 @@ app.use(express.json());
 // Test Supabase connection
 const testSupabaseConnection = async () => {
   try {
+    console.log('Testing Supabase connection...');
     const { data, error } = await supabase.from('users').select('count').single();
-    if (error) throw error;
-    console.log('✅ Supabase connection established successfully.');
+    
+    if (error) {
+      console.error('❌ Supabase connection error:', error.message);
+      console.log('You may need to create the users table in your Supabase project.');
+      console.log('Use the SQL script in supabase-setup.sql to set up your database.');
+      return false;
+    }
+    
+    console.log('✅ Supabase connection established successfully!');
     return true;
   } catch (error) {
     console.error('❌ Unable to connect to Supabase:', error.message);
@@ -49,12 +57,8 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// For local development
-if (process.env.NODE_ENV !== 'production' || process.env.VERCEL_ENV === undefined) {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
-
-// For Vercel serverless deployment
-export default app;
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`API available at http://localhost:${PORT}/api`);
+}); 

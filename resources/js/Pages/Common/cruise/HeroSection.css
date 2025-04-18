@@ -1,16 +1,277 @@
-ww.hero-section {
+/* Hero Section */
+.hero-section {
   position: relative;
-  height: 650px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
   overflow: hidden;
-  transition: all 0.3s ease-in-out;
-  padding-top: 100px; /* Increased padding-top to create more space after navbar */
-  -webkit-font-smoothing: antialiased; /* Improved text rendering on Mac */
-  -moz-osx-font-smoothing: grayscale; /* Improved text rendering on Mac */
 }
 
+/* Search Container */
+.search-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+  animation: slideUp 0.6s ease-out;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .search-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .search-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Search Fields */
+.search-field {
+  position: relative;
+}
+
+.search-label {
+  display: flex;
+  align-items: center;
+  color: #4B5563;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+}
+
+.search-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #3B82F6;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #E5E7EB;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  color: #1F2937;
+  background-color: white;
+  appearance: none;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-input::placeholder {
+  color: #9CA3AF;
+}
+
+/* Search Submit Button */
+.search-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 1rem 2rem;
+  background: linear-gradient(to right, #2563EB, #3B82F6);
+  color: white;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .search-submit {
+    width: auto;
+  }
+}
+
+.search-submit:hover {
+  background: linear-gradient(to right, #1D4ED8, #2563EB);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.search-submit:active {
+  transform: translateY(0);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 4rem;
+  max-width: 64rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: scale(1.05);
+}
+
+.stat-icon {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  border-radius: 9999px;
+  background: rgba(59, 130, 246, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon svg {
+  color: #60A5FA;
+}
+
+.stat-number {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  color: #E5E7EB;
+  font-weight: 500;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom Scrollbar */
+.search-input::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-input::-webkit-scrollbar-track {
+  background: #F3F4F6;
+  border-radius: 9999px;
+}
+
+.search-input::-webkit-scrollbar-thumb {
+  background: #3B82F6;
+  border-radius: 9999px;
+}
+
+/* Dropdown Styling */
+select.search-input {
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+}
+
+/* States */
+.search-field:hover .search-input {
+  border-color: #93C5FD;
+}
+
+.search-input.error {
+  border-color: #EF4444;
+}
+
+.search-input.error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.search-input.success {
+  border-color: #10B981;
+}
+
+.search-input.success:focus {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.search-submit.loading {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .search-container {
+    padding: 1.5rem;
+  }
+  
+  .search-grid {
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+}
+
+/* Hero Section Styles */
 .hero-section.scrolled {
   height: 700px;
 }
@@ -271,7 +532,7 @@ ww.hero-section {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -717,14 +978,6 @@ ww.hero-section {
   font-weight: 500;
 }
 
-/* Ensure consistent container dimensions */
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
 /* Date picker styling */
 .date-picker-dropdown {
   width: 310px;
@@ -1005,4 +1258,22 @@ ww.hero-section {
     left: 0;
     right: 0;
   }
+}
+
+/* Animation Classes */
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.fade-in-delay-1 {
+  animation-delay: 0.2s;
+}
+
+.fade-in-delay-2 {
+  animation-delay: 0.4s;
+}
+
+.fade-in-delay-3 {
+  animation-delay: 0.6s;
 }

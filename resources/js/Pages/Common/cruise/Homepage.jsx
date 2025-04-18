@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import HeroSection from './HeroSection';
 import DestinationSection from './DestinationSection';
 import CruiseLineSection from './CruiseLineSection';
-import PartnerSection from './PartnerSection';
 import { FaShip, FaAnchor, FaStar, FaLifeRing, FaUsers, FaCheckCircle, FaTimes, FaQuoteRight, FaUser, FaEnvelope, FaCommentAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import Navbar from '../Navbar';
@@ -159,25 +158,25 @@ const TestimonialBanner = () => {
           <div className="mb-6 md:mb-0 md:w-2/3 text-center md:text-left">
             <h3 className="text-2xl md:text-3xl font-bold mb-2">"The best cruise booking experience I've ever had!"</h3>
             <p className="opacity-90 mb-4">— Sarah Johnson, traveled with Royal Caribbean</p>
-            <div className="flex items-center justify-center md:justify-start">
+            <div className="flex items-center justify-center md:justify-start pl-10">
               <FaStar className="text-yellow-300" />
               <FaStar className="text-yellow-300" />
               <FaStar className="text-yellow-300" />
               <FaStar className="text-yellow-300" />
               <FaStar className="text-yellow-300" />
-              <span className="ml-2 text-sm opacity-90">5.0 from over 3,200 reviews</span>
+              <span className="ml-7 text-sm opacity-90">5.0 from over 3,200 reviews</span>
             </div>
           </div>
           
           <div className="flex space-x-3">
             <button 
-              className="bg-white text-[#0066b2] font-bold py-3 px-6 rounded-full hover:bg-opacity-90 transition-all flex items-center hover:shadow-lg hover:-translate-y-1 duration-300"
+              className="bg-white text-[#0066b2] font-bold py-2 px-4 text-sm rounded-full hover:bg-opacity-90 transition-all flex items-center hover:shadow-lg hover:-translate-y-1 duration-300"
               onClick={() => setShowTestimonials(true)}
             >
               <FaUsers className="mr-2" /> Read Testimonials
             </button>
             <button 
-              className="bg-transparent border-2 border-white text-white font-bold py-3 px-6 rounded-full hover:bg-white hover:text-[#0066b2] transition-all flex items-center hover:shadow-lg hover:-translate-y-1 duration-300"
+              className="bg-transparent border-2 border-white text-white font-bold py-2 px-4 text-sm rounded-full hover:bg-white hover:text-[#0066b2] transition-all flex items-center hover:shadow-lg hover:-translate-y-1 duration-300"
               onClick={() => setShowContactForm(true)}
             >
               <FaLifeRing className="mr-2" /> Contact Support
@@ -547,29 +546,58 @@ const HomePage = () => {
           <PromoSection />
         </section>
         
-        <section id="partners" style={styles.section}>
-          <PartnerSection />
-        </section>
         
         {/* Simple Email Subscription Section */}
-        <section className="simple-subscription-section bg-gray-50 py-12">
-          <div className="container mx-auto px-4 text-center max-w-2xl">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-3">Stay Updated</h3>
-            <p className="text-gray-600 mb-6">Subscribe to receive the latest cruise deals and travel tips directly to your inbox.</p>
-            <form className="flex flex-col sm:flex-row gap-3 justify-center">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-              <button 
-                type="submit" 
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300 shadow hover:shadow-md"
-              >
-                Subscribe
-              </button>
-            </form>
+        <section className="subscription-section py-16 relative" style={{ 
+          backgroundImage: "url('https://images.unsplash.com/photo-1599640842225-85d111c60e6b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat"
+        }}>
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-blue-900 opacity-80"></div>
+          
+          <div className="container mx-auto px-6 relative z-10">
+            <div className="max-w-xl mx-auto bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-10 border border-white border-opacity-20 shadow-lg">
+              <div className="flex flex-col items-center text-center">
+                <div className="mb-2">
+                  <FaEnvelope className="text-white text-2xl" />
+                </div>
+                <h3 className="text-3xl font-bold text-white mb-2">Stay Updated</h3>
+                <p className="text-white text-opacity-90 mb-6">Subscribe to receive the latest cruise deals and travel tips directly to your inbox.</p>
+                
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="flex -space-x-2">
+                    <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
+                    <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
+                    <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80" alt="" />
+                  </div>
+                  <span className="text-sm text-white">Join 25,000+ subscribers</span>
+                </div>
+                
+                <form className="w-full flex items-center gap-2">
+                  <input
+                    type="email"
+                    placeholder="Enter your email address"
+                    className="flex-1 px-5 py-3 rounded-l-lg bg-white border-0 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    required
+                  />
+                  <button 
+                    type="submit" 
+                    className="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-r-lg flex items-center transition-colors"
+                  >
+                    Subscribe
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </button>
+                </form>
+                
+                <div className="mt-4">
+                  <p className="text-white text-opacity-80 text-xs">By subscribing, you agree to our <a href="#" className="underline hover:text-white">Privacy Policy</a></p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>

@@ -1,13 +1,13 @@
 # JetSet App
 
-A modern full-stack application built with React, Node.js, and SQLite.
+A modern full-stack application built with React, Node.js, and Supabase.
 
 ## Features
 
 - User authentication with JWT
 - User profile management
 - RESTful API with Express
-- SQLite database with Sequelize ORM
+- Supabase database
 - React frontend with Vite
 
 ## Project Structure
@@ -17,9 +17,8 @@ A modern full-stack application built with React, Node.js, and SQLite.
 │   ├── config/          # Database configuration
 │   ├── controllers/     # API controllers
 │   ├── middleware/      # Authentication middleware
-│   ├── models/          # Sequelize models
+│   ├── models/          # Supabase models
 │   └── routes/          # API routes
-├── database/            # SQLite database files
 ├── public/              # Static assets
 ├── resources/           # Frontend React code
 │   ├── css/             # Stylesheets
@@ -40,7 +39,15 @@ A modern full-stack application built with React, Node.js, and SQLite.
    npm install
    ```
 
-3. Create a `.env` file based on `.env.example`
+3. Create a `.env` file with the following variables:
+   ```
+   NODE_ENV=development
+   PORT=5000
+   JWT_SECRET=your-secret-key
+   JWT_EXPIRE=30d
+   SUPABASE_URL=your-supabase-url
+   SUPABASE_ANON_KEY=your-supabase-anon-key
+   ```
 
 4. Start the development server:
    ```
@@ -49,7 +56,7 @@ A modern full-stack application built with React, Node.js, and SQLite.
 
 5. Access the application:
    - Frontend: http://localhost:5173
-   - Backend API: http://localhost:9999/api
+   - Backend API: http://localhost:5000/api
 
 ## Available Scripts
 
@@ -75,8 +82,8 @@ A modern full-stack application built with React, Node.js, and SQLite.
 ## Technologies Used
 
 - **Frontend**: React, React Router, Axios, Vite, Tailwind CSS
-- **Backend**: Node.js, Express, Sequelize
-- **Database**: SQLite
+- **Backend**: Node.js, Express
+- **Database**: Supabase
 - **Authentication**: JWT (JSON Web Tokens)
 
 ## Development

@@ -47,10 +47,6 @@ dist/
 .env.test.local
 .env.production.local
 
-# Database files
-database/*.sqlite
-database/*.sqlite-journal
-
 # Editor files
 .idea/
 .vscode/

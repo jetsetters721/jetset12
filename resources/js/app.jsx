@@ -246,6 +246,23 @@ const Login = React.lazy(() =>
     .catch(() => ({ default: LoginFallback }))
 );
 
+// Signup page fallback
+const SignupFallback = () => (
+  <div style={{ padding: '50px', textAlign: 'center' }}>
+    <h1>Sign Up</h1>
+    <p>Loading signup page...</p>
+    <a href="/" style={{ display: 'inline-block', marginTop: '20px', padding: '10px 20px', background: '#0066B2', color: 'white', textDecoration: 'none', borderRadius: '4px' }}>
+      Back to Home
+    </a>
+  </div>
+);
+
+// Signup page import
+const Signup = React.lazy(() => 
+  import('./Pages/Common/login/signup')
+    .catch(() => ({ default: SignupFallback }))
+);
+
 // Import FlightBookingConfirmation component
 const FlightBookingConfirmation = React.lazy(() => 
   import('./Pages/Common/flights/FlightBookingConfirmation')
@@ -282,6 +299,7 @@ const App = () => {
         <Route path="/" element={<Welcome />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/profiledashboard" element={<ProfileDashboard />} />
         <Route path="/my-trips" element={<MyTripsPage />} />
         <Route path="/forgot-password" element={<Navigate to="/login" />} /> {/* Redirect to login for now */}

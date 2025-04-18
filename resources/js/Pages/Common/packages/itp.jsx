@@ -644,7 +644,7 @@ const ItineraryPackage = () => {
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-sm text-sm flex items-center justify-center gap-1"
+                      className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow-sm text-sm flex items-center justify-center gap-1"
                     >
                       <span>Get Quote</span>
                       <ChevronRight size={16} />

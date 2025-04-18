@@ -4,7 +4,7 @@ import {
   Star, MapPin, Check, ChevronLeft, Heart, Share, Calendar, 
   Users, X, ChevronRight, ChevronDown, ThumbsUp, MessageCircle, 
   Award, Camera, Coffee, ArrowRight, Bookmark, Phone, Mail, Facebook, Twitter, Instagram,
-  Clock, Wifi, Tv, Shield, Utensils, Car, Sunset, Sparkles, Info
+  Clock, Wifi, Tv, Shield, Utensils, Car, Sunset, Sparkles, Info, Plus, Minus
 } from "lucide-react";
 import { hotels, hotelDetails } from "./hotel";
 import Navbar from "../Navbar";
@@ -25,10 +25,11 @@ export default function HotelDetails() {
   const [selectedRoom, setSelectedRoom] = useState(0);
   const [guestCount, setGuestCount] = useState({ adults: 2, children: 1 });
   const [showReviews, setShowReviews] = useState(false);
-  const [checkInDate, setCheckInDate] = useState("Jul 24, 2025");
-  const [checkOutDate, setCheckOutDate] = useState("Jul 28, 2025");
+  const [checkInDate, setCheckInDate] = useState(new Date(2025, 6, 24)); // July 24, 2025
+  const [checkOutDate, setCheckOutDate] = useState(new Date(2025, 6, 28)); // July 28, 2025
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showGuestDropdown, setShowGuestDropdown] = useState(false);
+  const [activeDateInput, setActiveDateInput] = useState(null); // 'checkin' or 'checkout'
   const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
   const [showCallbackRequest, setShowCallbackRequest] = useState(false);
   const [callbackForm, setCallbackForm] = useState({
@@ -61,6 +62,12 @@ export default function HotelDetails() {
   const overviewRef = useRef(null);
   const roomsRef = useRef(null);
   const amenitiesRef = useRef(null);
+  const guestDropdownRef = useRef(null);
+  const datepickerRef = useRef(null);
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const currentDate = new Date();
+  const [displayedMonth, setDisplayedMonth] = useState(6); // July (0-indexed)
+  const [displayedYear, setDisplayedYear] = useState(2025);
   const locationRef = useRef(null);
   const reviewsRef = useRef(null);
 
@@ -158,6 +165,68 @@ export default function HotelDetails() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showGuestDropdown, showDatePicker, showAmenityDetails]);
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (datepickerRef.current && !datepickerRef.current.contains(event.target)) {
+        setShowDatePicker(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [datepickerRef]);
+
+  // Calculate days in month for the calendar
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  // Get day of week for the first day of the month
+  const getFirstDayOfMonth = (year, month) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  // Generate calendar days for current month view
+  const generateCalendarDays = () => {
+    const daysInMonth = getDaysInMonth(displayedYear, displayedMonth);
+    const firstDay = getFirstDayOfMonth(displayedYear, displayedMonth);
+    const days = [];
+    
+    // Add empty cells for days before the first day of month
+    for (let i = 0; i < firstDay; i++) {
+      days.push(null);
+    }
+    
+    // Add actual days
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(i);
+    }
+    
+    return days;
+  };
+
+  // Navigate to previous month
+  const previousMonth = () => {
+    if (displayedMonth === 0) {
+      setDisplayedMonth(11);
+      setDisplayedYear(displayedYear - 1);
+    } else {
+      setDisplayedMonth(displayedMonth - 1);
+    }
+  };
+
+  // Navigate to next month
+  const nextMonth = () => {
+    if (displayedMonth === 11) {
+      setDisplayedMonth(0);
+      setDisplayedYear(displayedYear + 1);
+    } else {
+      setDisplayedMonth(displayedMonth + 1);
+    }
+  };
+
   const handleBack = () => {
     navigate("/rental");
   };
@@ -196,19 +265,90 @@ export default function HotelDetails() {
   };
 
   const handleGuestChange = (type, action) => {
-    if (type === 'adults') {
-      if (action === 'increase') {
-        setGuestCount((prev) => ({ ...prev, adults: prev.adults + 1 }));
-      } else if (action === 'decrease' && guestCount.adults > 1) {
-        setGuestCount((prev) => ({ ...prev, adults: prev.adults - 1 }));
+    setGuestCount(prev => {
+      let newCount;
+      if (action === 'increment') {
+        newCount = { ...prev, [type]: prev[type] + 1 };
+      } else {
+        // Ensure adults don't go below 1 and children don't go below 0
+        if (type === 'adults') {
+          newCount = { ...prev, [type]: Math.max(1, prev[type] - 1) };
+        } else {
+          newCount = { ...prev, [type]: Math.max(0, prev[type] - 1) };
+        }
       }
-    } else if (type === 'children') {
-      if (action === 'increase') {
-        setGuestCount((prev) => ({ ...prev, children: prev.children + 1 }));
-      } else if (action === 'decrease' && guestCount.children > 0) {
-        setGuestCount((prev) => ({ ...prev, children: prev.children - 1 }));
+      return newCount;
+    });
+  };
+
+  // Format date as "MMM DD, YYYY"
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const month = d.toLocaleString('default', { month: 'short' });
+    const day = d.getDate();
+    const year = d.getFullYear();
+    return `${month} ${day}, ${year}`;
+  };
+
+  // Handle date selection in the calendar
+  const handleDateSelect = (day) => {
+    if (!day) return; // Skip empty cells
+    
+    const newDate = new Date(displayedYear, displayedMonth, day);
+    
+    // If no dates selected or both dates selected, start fresh
+    if (!selectedDates.startDate || (selectedDates.startDate && selectedDates.endDate)) {
+      setSelectedDates({
+        startDate: newDate,
+        endDate: null,
+        key: 'selection'
+      });
+    } 
+    // If only start date is selected
+    else if (selectedDates.startDate && !selectedDates.endDate) {
+      // Ensure end date is after start date
+      if (newDate < selectedDates.startDate) {
+        setSelectedDates({
+          startDate: newDate,
+          endDate: selectedDates.startDate,
+          key: 'selection'
+        });
+      } else {
+        setSelectedDates({
+          ...selectedDates,
+          endDate: newDate
+        });
       }
+      
+      // Update displayed dates
+      setCheckInDate(formatDate(selectedDates.startDate));
+      setCheckOutDate(formatDate(newDate));
+      
+      // Close the date picker after selecting both dates
+      setTimeout(() => setShowDatePicker(false), 500);
     }
+  };
+
+  // Check if a day is the selected start date
+  const isStartDate = (day) => {
+    if (!day || !selectedDates.startDate) return false;
+    const date = new Date(displayedYear, displayedMonth, day);
+    return date.getTime() === selectedDates.startDate.getTime();
+  };
+
+  // Check if a day is the selected end date
+  const isEndDate = (day) => {
+    if (!day || !selectedDates.endDate) return false;
+    const date = new Date(displayedYear, displayedMonth, day);
+    return date.getTime() === selectedDates.endDate.getTime();
+  };
+
+  // Check if a day is in the selected range
+  const isInRange = (day) => {
+    if (!day || !selectedDates.startDate || !selectedDates.endDate) return false;
+    const date = new Date(displayedYear, displayedMonth, day);
+    return date > selectedDates.startDate && date < selectedDates.endDate;
   };
 
   const handleReserveNow = () => {
@@ -325,8 +465,8 @@ export default function HotelDetails() {
   }
 
   const currentRoomPrice = roomTypes[selectedRoom].price;
-  const totalNights = 4;
-  const totalPrice = currentRoomPrice * totalNights + 50 + 30;
+  const totalNights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+  const totalPrice = roomTypes[selectedRoom]?.price * totalNights + 50 + 30;
 
   return (
     <>
@@ -629,28 +769,136 @@ export default function HotelDetails() {
 
                 <div className="mb-4">
                   <div className="border border-gray-200 rounded-t-lg overflow-hidden">
-                    <div className="grid grid-cols-2">
+                    <div className="grid grid-cols-2 divide-x divide-gray-200">
                       <div 
-                        className="p-4 border-r border-b border-gray-200 cursor-pointer hover:bg-blue-50 transition-colors date-picker"
-                        onClick={() => setShowDatePicker(!showDatePicker)}
+                        className="p-4 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => {
+                          setActiveDateInput('checkin');
+                          setShowDatePicker(true);
+                          setShowGuestDropdown(false);
+                        }}
                       >
-                        <label className="block text-xs text-gray-500 mb-1">CHECK-IN</label>
+                        <p className="text-xs text-gray-500 mb-1">CHECK-IN</p>
                         <div className="flex items-center">
-                          <Calendar size={16} className="text-gray-400 mr-2" />
-                          <span className="text-gray-800">{checkInDate}</span>
+                          <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                          <span>{formatDate(checkInDate)}</span>
                         </div>
                       </div>
                       <div 
-                        className="p-4 border-b border-gray-200 cursor-pointer hover:bg-blue-50 transition-colors date-picker"
-                        onClick={() => setShowDatePicker(!showDatePicker)}
+                        className="p-4 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => {
+                          setActiveDateInput('checkout');
+                          setShowDatePicker(true);
+                          setShowGuestDropdown(false);
+                        }}
                       >
-                        <label className="block text-xs text-gray-500 mb-1">CHECK-OUT</label>
+                        <p className="text-xs text-gray-500 mb-1">CHECK-OUT</p>
                         <div className="flex items-center">
-                          <Calendar size={16} className="text-gray-400 mr-2" />
-                          <span className="text-gray-800">{checkOutDate}</span>
+                          <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                          <span>{formatDate(checkOutDate)}</span>
                         </div>
                       </div>
                     </div>
+                    
+                    {/* Date Picker Popup */}
+                    {showDatePicker && (
+                      <div 
+                        ref={datepickerRef}
+                        className="absolute left-0 right-0 top-[100px] bg-white border border-gray-200 rounded-xl shadow-xl z-20 p-4 mt-2"
+                      >
+                        <div className="flex justify-between items-center mb-4">
+                          <button 
+                            onClick={previousMonth}
+                            className="p-1 rounded-full hover:bg-gray-100"
+                            type="button"
+                          >
+                            <ChevronLeft className="h-5 w-5 text-gray-600" />
+                          </button>
+                          <h3 className="font-medium">{months[displayedMonth]} {displayedYear}</h3>
+                          <button 
+                            onClick={nextMonth}
+                            className="p-1 rounded-full hover:bg-gray-100"
+                            type="button"
+                          >
+                            <ChevronRight className="h-5 w-5 text-gray-600" />
+                          </button>
+                        </div>
+                        
+                        <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-2">
+                          <div>Su</div>
+                          <div>Mo</div>
+                          <div>Tu</div>
+                          <div>We</div>
+                          <div>Th</div>
+                          <div>Fr</div>
+                          <div>Sa</div>
+                        </div>
+                        
+                        <div className="grid grid-cols-7 gap-1">
+                          {generateCalendarDays().map((day, index) => {
+                            const date = day !== null ? new Date(displayedYear, displayedMonth, day) : null;
+                            const isToday = date && new Date().toDateString() === date.toDateString();
+                            const isSelected = 
+                              date && 
+                              ((activeDateInput === 'checkin' && checkInDate.toDateString() === date.toDateString()) ||
+                               (activeDateInput === 'checkout' && checkOutDate.toDateString() === date.toDateString()));
+                            const isDisabled = date && (
+                              date < new Date().setHours(0, 0, 0, 0) || 
+                              (activeDateInput === 'checkout' && date <= checkInDate)
+                            );
+                            
+                            return (
+                              <div 
+                                key={index}
+                                onClick={() => {
+                                  if (day !== null && !isDisabled) {
+                                    const newDate = new Date(displayedYear, displayedMonth, day);
+                                    if (activeDateInput === 'checkin') {
+                                      setCheckInDate(newDate);
+                                      if (newDate >= checkOutDate) {
+                                        // If new check-in date is after current check-out date,
+                                        // set check-out to the next day
+                                        setCheckOutDate(new Date(newDate.getTime() + 86400000)); 
+                                      }
+                                      setActiveDateInput('checkout');
+                                    } else {
+                                      setCheckOutDate(newDate);
+                                      setShowDatePicker(false);
+                                    }
+                                  }
+                                }}
+                                className={`
+                                  h-10 w-full flex items-center justify-center rounded-full text-sm
+                                  ${day === null ? 'cursor-default' : isDisabled ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100'}
+                                  ${isToday ? 'border border-gray-300' : ''}
+                                  ${isSelected ? 'bg-[#0061ff] text-white hover:bg-blue-700' : ''}
+                                `}
+                              >
+                                {day}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        <div className="mt-4 flex justify-between">
+                          <button 
+                            onClick={() => setShowDatePicker(false)}
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300"
+                            type="button"
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            onClick={() => setShowDatePicker(false)}
+                            className="px-4 py-2 bg-[#0061ff] text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                            type="button"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
                     <div 
                       className="p-4 border-b border-gray-200 cursor-pointer hover:bg-blue-50 transition-colors guest-dropdown relative"
                       onClick={() => setShowGuestDropdown(!showGuestDropdown)}
@@ -674,7 +922,7 @@ export default function HotelDetails() {
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleGuestChange('adults', 'decrease');
+                                    handleGuestChange('adults', 'decrement');
                                   }}
                                   className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100"
                                   disabled={guestCount.adults <= 1}
@@ -685,7 +933,7 @@ export default function HotelDetails() {
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleGuestChange('adults', 'increase');
+                                    handleGuestChange('adults', 'increment');
                                   }}
                                   className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100"
                                 >
@@ -699,7 +947,7 @@ export default function HotelDetails() {
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleGuestChange('children', 'decrease');
+                                    handleGuestChange('children', 'decrement');
                                   }}
                                   className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100"
                                   disabled={guestCount.children <= 0}
@@ -710,7 +958,7 @@ export default function HotelDetails() {
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleGuestChange('children', 'increase');
+                                    handleGuestChange('children', 'increment');
                                   }}
                                   className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100"
                                 >
@@ -736,8 +984,8 @@ export default function HotelDetails() {
 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between">
-                    <span className="text-gray-700">${currentRoomPrice} x {totalNights} nights</span>
-                    <span className="text-gray-700">${currentRoomPrice * totalNights}</span>
+                    <span className="text-gray-700">${roomTypes[selectedRoom].price} x {Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))} nights</span>
+                    <span className="text-gray-700">${roomTypes[selectedRoom].price * Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-700">Cleaning fee</span>
@@ -749,7 +997,7 @@ export default function HotelDetails() {
                   </div>
                   <div className="border-t border-gray-200 pt-4 flex justify-between font-bold">
                     <span>Total</span>
-                    <span>${totalPrice}</span>
+                    <span>${(roomTypes[selectedRoom].price * Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))) + 50 + 30}</span>
                   </div>
                 </div>
 
@@ -1015,11 +1263,11 @@ export default function HotelDetails() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-gray-500 mb-1">CHECK-IN</p>
-                  <p className="font-medium">{checkInDate}</p>
+                  <p className="font-medium">{formatDate(checkInDate)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">CHECK-OUT</p>
-                  <p className="font-medium">{checkOutDate}</p>
+                  <p className="font-medium">{formatDate(checkOutDate)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">GUESTS</p>
@@ -1033,7 +1281,7 @@ export default function HotelDetails() {
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="flex justify-between font-bold">
                   <span>Total</span>
-                  <span>${totalPrice}</span>
+                  <span>${(roomTypes[selectedRoom].price * Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))) + 50 + 30}</span>
                 </div>
               </div>
             </div>

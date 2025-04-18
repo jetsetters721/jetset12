@@ -15,13 +15,18 @@ export const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'jetset-app-secret-key');
 
       // Get user from token
-      req.user = await User.findByPk(decoded.id, {
-        attributes: { exclude: ['password'] }
-      });
+      const user = await User.findById(decoded.id);
+      if (!user) {
+        return res.status(401).json({ message: 'User not found' });
+      }
+
+      // Remove password from user object
+      const { password, ...userWithoutPassword } = user;
+      req.user = userWithoutPassword;
 
       next();
     } catch (error) {
-      console.error(error);
+      console.error('Auth middleware error:', error);
       res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }

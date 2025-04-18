@@ -18,6 +18,19 @@ fi
 echo "Setting storage permissions..."
 chmod -R 777 storage bootstrap/cache
 
+# Test Supabase connection
+echo "Testing Supabase connection..."
+node -e "
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+supabase.from('users').select('count').single()
+  .then(() => console.log('✅ Supabase connection successful'))
+  .catch(err => {
+    console.error('❌ Supabase connection failed:', err);
+    process.exit(1);
+  });
+"
+
 # Check if we can access PHP
 if command -v php &> /dev/null; then
     echo "PHP is available. Warming up application..."
@@ -36,4 +49,4 @@ fi
 # In render.yaml, the actual web server will be started with:
 # heroku-php-apache2 -p ${PORT:-8000} public/
 
-echo "Pre-start tasks completed. Waiting for web server to be started by Render..."
+echo "Pre-start tasks completed. Starting the application..."

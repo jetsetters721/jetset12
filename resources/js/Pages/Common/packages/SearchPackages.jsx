@@ -326,8 +326,8 @@ const SearchPackages = () => {
                 )}
 
                 {/* Package Info Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform group-hover:translate-y-0 transition-transform duration-300">
-                  <h3 className="text-white font-semibold text-lg mb-1 group-hover:text-xl transition-all">{pkg.title}</h3>
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-white font-semibold text-lg mb-1">{pkg.title}</h3>
                   {pkg.location && (
                     <div className="flex items-center gap-1 text-white/90">
                       <MapPin size={16} />
@@ -344,7 +344,7 @@ const SearchPackages = () => {
                   {pkg.features?.slice(0, 3).map((feature, idx) => (
                     <span
                       key={idx}
-                      className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full transform hover:scale-105 transition-transform duration-300"
+                      className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
                     >
                       {feature}
                     </span>
@@ -373,9 +373,9 @@ const SearchPackages = () => {
                       <span className="text-2xl font-bold text-blue-600">{pkg.price}</span>
                     </div>
                   </div>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300 flex items-center gap-1 text-sm font-medium group">
+                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-1 text-sm font-medium group">
                     View Details
-                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight size={16} />
                   </button>
                 </div>
               </div>
@@ -394,7 +394,7 @@ const SearchPackages = () => {
                   No results found for "{searchQuery}". Try different keywords or 
                   <button 
                     onClick={() => setSearchQuery("")}
-                    className="text-blue-600 hover:text-blue-700 ml-1"
+                    className="text-blue-600 ml-1"
                   >
                     clear your search
                   </button>

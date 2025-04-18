@@ -17,109 +17,155 @@ const generateToken = (id) => {
 // @access  Public
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    console.log('Registration request received:', {
+      ...req.body,
+      password: req.body.password ? '***' : undefined
+    });
+    
+    const { firstName, lastName, email, password } = req.body;
 
-    // Check if user already exists
-    const userExists = await User.findOne({ where: { email } });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+    // Validate input
+    if (!firstName || !lastName || !email || !password) {
+      console.error('Missing required fields');
+      return res.status(400).json({
+        message: 'All fields are required',
+        details: {
+          firstName: !firstName ? 'First name is required' : null,
+          lastName: !lastName ? 'Last name is required' : null,
+          email: !email ? 'Email is required' : null,
+          password: !password ? 'Password is required' : null
+        }
+      });
     }
 
-    // Create new user
-    const user = await User.create({
-      name,
-      email,
-      password
-    });
-
-    if (user) {
-      res.status(201).json({
-        success: true,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        },
-        token: generateToken(user.id)
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        message: 'Invalid email format'
       });
-    } else {
-      res.status(400).json({ message: 'Invalid user data' });
+    }
+
+    // Password strength validation
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: 'Password must be at least 8 characters long'
+      });
+    }
+
+    try {
+      const user = await User.create({
+        firstName,
+        lastName,
+        email,
+        password
+      });
+
+      const token = jwt.sign(
+        { id: user.id },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRE }
+      );
+
+      console.log('User registered successfully:', {
+        id: user.id,
+        email: user.email
+      });
+
+      res.status(201).json({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        token
+      });
+    } catch (error) {
+      if (error.message.includes('already exists')) {
+        return res.status(409).json({
+          message: 'User with this email already exists'
+        });
+      }
+      throw error;
     }
   } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error in register controller:', error);
+    res.status(500).json({
+      message: 'Server error during registration',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
-// @desc    Login user & get token
+// @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
-// export const login = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     // Find user by email
-//     const user = await User.findOne({ where: { email } });
-
-//     // Check if user exists and password matches
-//     if (user && (await user.matchPassword(password))) {
-//       res.json({
-//         success: true,
-//         user: {
-//           id: user.id,
-//           name: user.name,
-//           email: user.email,
-//           role: user.role
-//         },
-//         token: generateToken(user.id)
-//       });
-//     } else {
-//       res.status(401).json({ message: 'Invalid email or password' });
-//     }
-//   } catch (error) {
-//     console.error('Login error:', error);
-//     res.status(500).json({ message: 'Server error', error: error.message });
-//   }
-// };
-
-
 export const login = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ where: { email } });
-
-  if (!user || !(await user.matchPassword(password))) {
-    return res.status(401).json({ message: 'Invalid credentials' });
-  }
-
-  // Generate JWT Token
-  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-  // Send token in the response
-  res.json({ token });
-};
-
-// @desc    Get current logged in user
-// @route   GET /api/auth/me
-// @access  Private
-export const getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: { exclude: ['password'] }
-    });
+    console.log('Login request received:', { email: req.body.email });
+    
+    const { email, password } = req.body;
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!email || !password) {
+      console.error('Missing login credentials');
+      return res.status(400).json({ message: 'All fields are required' });
     }
+
+    const user = await User.findByEmail(email);
+    if (!user) {
+      console.error('User not found:', email);
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const isMatch = await User.matchPassword(password, user.password);
+    if (!isMatch) {
+      console.error('Password mismatch for user:', email);
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRE }
+    );
+
+    console.log('User logged in successfully:', { id: user.id, email: user.email });
 
     res.json({
       id: user.id,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
-      role: user.role
+      token
     });
   } catch (error) {
-    console.error('Get current user error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error in login controller:', error);
+    res.status(500).json({ message: 'Server error during login', error: error.message });
+  }
+};
+
+// @desc    Get current user profile
+// @route   GET /api/auth/me
+// @access  Private
+export const getMe = async (req, res) => {
+  try {
+    console.log('GetMe request received for user:', req.user.id);
+    
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      console.error('User not found in getMe:', req.user.id);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log('GetMe successful for user:', { id: user.id, email: user.email });
+
+    res.json({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email
+    });
+  } catch (error) {
+    console.error('Error in getMe controller:', error);
+    res.status(500).json({ message: 'Server error while fetching user data', error: error.message });
   }
 };

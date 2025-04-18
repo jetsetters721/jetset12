@@ -44,7 +44,7 @@ const CruiseLineSection = () => {
         to="/cruises"
         className="explore-more"
       >
-        Explore more destinations
+        Explore more
       </Link>
     </section>
   );

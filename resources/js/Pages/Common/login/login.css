@@ -100,11 +100,9 @@
 
 /* Forgot Password Styling */
 .forgot-password {
-  color: #0855A2; /* Link color */
+  color: #06457A;
   text-decoration: none;
-  font-size: 9.96px; /* Font size */
-  font-weight: bold; /* Bold text */
-  font-family: 'Work Sans', sans-serif; /* Use Work Sans font */
+  font-weight: 500;
 }
 
 .forgot-password:hover {
@@ -113,30 +111,44 @@
 
 /* Sign In Button Styling */
 .login-button {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #0855A2; /* Button 1 color */
-  color: #ffffff; /* White text */
-  font-size: 1rem;
-  font-weight: bold; /* Bold weight for text */
-  font-family: 'Gilroy', sans-serif; /* Gilroy font for bold text */
+  background-color: #0855A2;
+  color: white;
   border: none;
-  border-radius: 7.11px; /* Updated corner radius */
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s; /* Added hover effect */
+  transition: background-color 0.2s;
+  margin-top: 1rem;
 }
 
 .login-button:hover {
-  background-color: #06457A; /* Slightly darker color for hover */
-  transform: scale(1.05); /* Slight zoom effect */
+  background-color: #06457A;
 }
 
-
 .login-divider {
-  margin: 1rem 0;
+  display: flex;
+  align-items: center;
   text-align: center;
-  color: #6b7280;
+  margin: 1.5rem 0;
+  color: #6B7280;
   font-size: 0.875rem;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.login-divider::before {
+  margin-right: 0.5rem;
+}
+
+.login-divider::after {
+  margin-left: 0.5rem;
 }
 
 /* Social Login */
@@ -144,52 +156,48 @@
   display: flex;
   justify-content: center;
   gap: 1rem;
-  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .social-button {
-  border: 1px solid #d1d5db;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
-  cursor: pointer;
-  transition: transform 0.2s;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #E5E7EB;
   background-color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .social-button img {
   width: 24px;
   height: 24px;
-  object-fit: contain;
 }
 
 .social-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: #F3F4F6;
 }
 
 /* Optional Specific Email Button Styling */
 .social-button img[alt="Email"] {
-  filter: brightness(0.5); /* Adjust brightness for contrast if needed */
+  width: 20px;
+  height: 20px;
 }
 
 /* By Proceeding Sentence Styling */
 .login-footer {
   margin-top: 1.5rem;
+  font-size: 0.75rem;
+  color: #6B7280;
   text-align: center;
-  font-size: 9.96px; /* Font size for footer text */
-  color: #000000; /* Thick black color */
-  font-family: 'Work Sans', sans-serif; /* Use Work Sans Regular font */
-  font-weight: normal; /* Regular weight */
 }
 
 /* Links in text */
 .text-link {
-  color: #0855A2;
+  color: #06457A;
   text-decoration: none;
   font-weight: 500;
 }
@@ -200,7 +208,15 @@
 
 /* Error Messages */
 .error-message {
-  color: #dc2626;
+  color: #DC2626;
   font-size: 0.75rem;
   margin-top: 0.25rem;
+}
+
+/* Signup specific styles */
+.signup-link {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #111111;
 }

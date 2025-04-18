@@ -14,11 +14,34 @@ const TravelPackages = () => {
   const [searchQuery, setSearchQuery] = useState("")
 
   // Combine all packages into one array for search
+  // Update package images with high-quality Unsplash images
   const allPackages = [
-    ...(packagesData.dubai?.packages || []),
-    ...(packagesData.europe?.packages || []),
-    ...(packagesData.kashmir?.packages || []),
-    ...(packagesData.northEast?.packages || [])
+    ...(packagesData.dubai?.packages || []).map(pkg => ({
+      ...pkg,
+      image: pkg.id === 1 ? "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80" :
+             pkg.id === 2 ? "https://images.unsplash.com/photo-1540541338287-41700207dee6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2370&q=80" :
+             pkg.id === 3 ? "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80" :
+             "https://images.unsplash.com/photo-1559599746-c0f31b4d2b8e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80"
+    })),
+    ...(packagesData.europe?.packages || []).map(pkg => ({
+      ...pkg,
+      image: pkg.id === 1 ? "https://images.unsplash.com/photo-1493707553966-283afac8c358?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2370&q=80" :
+             pkg.id === 2 ? "https://images.unsplash.com/photo-1533929736458-ca588d08c8be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2370&q=80" :
+             "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2336&q=80"
+    })),
+    ...(packagesData.kashmir?.packages || []).map(pkg => ({
+      ...pkg,
+      image: pkg.id === 1 ? "https://images.unsplash.com/photo-1593181629936-11c609b8db9b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2370&q=80" :
+             pkg.id === 2 ? "https://images.unsplash.com/photo-1626011352089-8b4700a539e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80" :
+             pkg.id === 3 ? "https://images.unsplash.com/photo-1572553073075-c8de74bc86df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2428&q=80" :
+             "https://images.unsplash.com/photo-1576408048159-b471bd05e2fc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1935&q=80"
+    })),
+    ...(packagesData.northEast?.packages || []).map(pkg => ({
+      ...pkg,
+      image: pkg.id === 1 ? "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2370&q=80" :
+             pkg.id === 2 ? "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2370&q=80" :
+             "https://images.unsplash.com/photo-1565019011521-254775ab7675?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2369&q=80"
+    }))
   ]
 
   const packageTypes = ["All Inclusive", "Flight + Hotel", "Activities Only", "Cruise Package"]
@@ -55,7 +78,7 @@ const TravelPackages = () => {
         {/* Back to Landing Button */}
         <button
           onClick={() => setShowSearchPage(false)}
-          className="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg hover:bg-white transition-all duration-300 flex items-center gap-2 text-gray-700"
+          className="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 text-gray-700"
         >
           <ArrowRight className="rotate-180" size={20} />
           Back to Home
@@ -72,7 +95,7 @@ const TravelPackages = () => {
                   placeholder="Search destinations, packages, or activities..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               </div>
@@ -82,7 +105,7 @@ const TravelPackages = () => {
                 <select
                   value={selectedPackageType}
                   onChange={(e) => setSelectedPackageType(e.target.value)}
-                  className="appearance-none px-4 py-3 rounded-lg border border-gray-200 bg-white pr-10 cursor-pointer hover:border-blue-500 transition-all"
+                  className="appearance-none px-4 py-3 rounded-lg border border-gray-200 bg-white pr-10 cursor-pointer"
                 >
                   {packageTypes.map((type) => (
                     <option key={type} value={type}>{type}</option>
@@ -389,7 +412,7 @@ const TravelPackages = () => {
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                   
@@ -499,7 +522,7 @@ const TravelPackages = () => {
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent group-hover:from-black/90"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-4 transform group-hover:-translate-y-1 transition-all">
@@ -538,7 +561,7 @@ const TravelPackages = () => {
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent group-hover:from-black/80 transition-all"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -572,12 +595,12 @@ const TravelPackages = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {packagesData.northEast.packages.map((item) => (
-              <div key={item.id} className="rounded-xl overflow-hidden shadow-lg group hover:shadow-2xl transition-all duration-300">
+              <div key={item.id} className="rounded-xl overflow-hidden shadow-lg group">
                 <div className="relative h-64">
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -603,7 +626,7 @@ const TravelPackages = () => {
 
       {/* Newsletter Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-800 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2074&auto=format&fit=crop')] opacity-10 bg-cover bg-center"></div>
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1599640842225-85d111c60e6b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80')] opacity-10 bg-cover bg-center"></div>
         <div className="container mx-auto px-4 relative">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Get Exclusive Travel Deals</h2>
@@ -614,7 +637,7 @@ const TravelPackages = () => {
                 placeholder="Enter your email"
                 className="px-6 py-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 flex-1 text-lg shadow-lg"
               />
-              <button className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-blue-50 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl">
+              <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg shadow-lg">
                 Subscribe Now
               </button>
             </div>

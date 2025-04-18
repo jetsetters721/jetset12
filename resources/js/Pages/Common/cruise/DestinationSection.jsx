@@ -16,7 +16,7 @@ const DestinationSection = () => {
       </p>
       
       <div className="destinations-grid">
-        {destinationsData.destinations.map((destination) => (
+        {destinationsData.destinations.slice(0, 6).map((destination) => (
           <div key={destination.id} className="destination-card">
             <div className="destination-rating">
               <FaStar className="star" />
@@ -43,7 +43,7 @@ const DestinationSection = () => {
         to="/cruises"
         className="explore-more"
       >
-        Explore more destinations
+        Explore more
       </Link>
     </section>
   );

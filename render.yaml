@@ -13,8 +13,10 @@ services:
         generateValue: true
       - key: JWT_EXPIRE
         value: 30d
-      - key: DB_DATABASE
-        value: /data/database.sqlite
+      - key: SUPABASE_URL
+        value: https://qqmagqwumjipdqvxbiqu.supabase.co
+      - key: SUPABASE_ANON_KEY
+        sync: false
       - key: VITE_API_URL
         value: /api
       - key: VITE_APP_NAME

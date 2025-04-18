@@ -143,6 +143,9 @@ export default function Login() {
                                     />
                                 </button>
                             </div>
+                            <div className="signup-link">
+                                Don't have an account? <Link to="/signup" className="text-link">Sign Up</Link>
+                            </div>
                         </form>
                         <p className="login-footer">
                             By proceeding, you agree to our <Link to="/privacy" className="text-link">Privacy Policy</Link> and <Link to="/terms" className="text-link">Terms of Service</Link>.

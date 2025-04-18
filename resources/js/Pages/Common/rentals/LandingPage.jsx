@@ -20,7 +20,8 @@ import {
   Clock, 
   MapPin,
   Award,
-  Sparkles
+  Sparkles,
+  X
 } from "lucide-react"
 import { hotels, popularDestinations } from "./hotel"
 import { useState, useEffect, useRef } from "react"
@@ -38,6 +39,123 @@ export default function LandingPage() {
   const [searchDates, setSearchDates] = useState("Select dates");
   const [searchTravelers, setSearchTravelers] = useState(2);
   const [filteredHotels, setFilteredHotels] = useState([]);
+  
+  // Date picker states
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [selectedStartDate, setSelectedStartDate] = useState(null);
+  const [selectedEndDate, setSelectedEndDate] = useState(null);
+  const [hoverDate, setHoverDate] = useState(null);
+  const datePickerRef = useRef(null);
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  
+  // Destination search suggestion states
+  const [destinationSuggestions, setDestinationSuggestions] = useState([]);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
+  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+  const destinationRef = useRef(null);
+
+  // Extract unique destinations from hotels
+  useEffect(() => {
+    // Populate destination suggestions from hotels data
+    const uniqueDestinations = [...new Set(hotels.map(hotel => hotel.location))];
+    setDestinationSuggestions(uniqueDestinations);
+  }, []);
+  
+  // Handle clicks outside dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showDatePicker && datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+        setShowDatePicker(false);
+      }
+      
+      if (showDestinationSuggestions && destinationRef.current && !destinationRef.current.contains(event.target)) {
+        setShowDestinationSuggestions(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDatePicker, showDestinationSuggestions]);
+  
+  // Generate calendar days for the date picker
+  const generateCalendarDays = () => {
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+    let days = Array(firstDayOfMonth).fill(null);
+    
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(i);
+    }
+    
+    return days;
+  };
+  
+  // Handle date selection
+  const handleDateSelect = (day) => {
+    if (!day) return;
+    
+    const selectedDate = new Date(currentYear, currentMonth, day);
+    
+    if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
+      setSelectedStartDate(selectedDate);
+      setSelectedEndDate(null);
+      setHoverDate(null);
+    } else {
+      if (selectedDate < selectedStartDate) {
+        setSelectedStartDate(selectedDate);
+        setSelectedEndDate(null);
+      } else {
+        setSelectedEndDate(selectedDate);
+        
+        // Format dates and update searchDates
+        const startDateStr = `${selectedStartDate.getDate()} ${months[selectedStartDate.getMonth()].substring(0, 3)}`;
+        const endDateStr = `${selectedDate.getDate()} ${months[selectedDate.getMonth()].substring(0, 3)}`;
+        setSearchDates(`${startDateStr} - ${endDateStr} ${currentYear}`);
+        setShowDatePicker(false);
+      }
+    }
+  };
+  
+  // Handle date hover for range selection
+  const handleDateHover = (day) => {
+    if (!day || !selectedStartDate || selectedEndDate) return;
+    setHoverDate(new Date(currentYear, currentMonth, day));
+  };
+  
+  // Check if a date is in range
+  const isInRange = (day) => {
+    if (!day || !selectedStartDate) return false;
+    
+    const date = new Date(currentYear, currentMonth, day);
+    const end = selectedEndDate || hoverDate;
+    
+    return end && date > selectedStartDate && date < end;
+  };
+  
+  // Filter destination suggestions based on input
+  const filterDestinations = (input) => {
+    setSearchDestination(input);
+    if (input.length > 0) {
+      const filtered = destinationSuggestions.filter(dest => 
+        dest.toLowerCase().includes(input.toLowerCase())
+      );
+      setFilteredSuggestions(filtered);
+      setShowDestinationSuggestions(filtered.length > 0);
+    } else {
+      setShowDestinationSuggestions(false);
+    }
+  };
+  
+  // Reset date selection
+  const resetDateSelection = () => {
+    setSelectedStartDate(null);
+    setSelectedEndDate(null);
+    setHoverDate(null);
+    setSearchDates("Select dates");
+    setShowDatePicker(false);
+  };
 
   // Handle scroll animations
   useEffect(() => {
@@ -151,11 +269,16 @@ export default function LandingPage() {
                       <MapPin className="h-4 w-4 text-blue-500" />
                       Destination
                     </label>
-                    <div className="relative group">
+                    <div className="relative group" ref={destinationRef}>
                       <input
                         type="text"
                         value={searchDestination}
-                        onChange={(e) => setSearchDestination(e.target.value)}
+                        onChange={(e) => filterDestinations(e.target.value)}
+                        onFocus={() => {
+                          if (searchDestination.length > 0) {
+                            setShowDestinationSuggestions(true);
+                          }
+                        }}
                         placeholder="Where do you want"
                         className="w-full py-3 pl-4 pr-10 bg-gray-50/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-200 group-hover:shadow-sm"
                       />
@@ -164,6 +287,27 @@ export default function LandingPage() {
                           <Globe className="h-4 w-4 text-blue-500" />
                         </div>
                       </div>
+                      
+                      {/* Destination Suggestions Dropdown */}
+                      {showDestinationSuggestions && (
+                        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-56 overflow-y-auto">
+                          <ul className="py-1">
+                            {filteredSuggestions.map((destination, index) => (
+                              <li 
+                                key={index}
+                                className="px-4 py-2 hover:bg-blue-50 cursor-pointer flex items-center"
+                                onClick={() => {
+                                  setSearchDestination(destination);
+                                  setShowDestinationSuggestions(false);
+                                }}
+                              >
+                                <MapPin className="h-4 w-4 text-blue-500 mr-2" />
+                                <span>{destination}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -200,9 +344,9 @@ export default function LandingPage() {
                       <Calendar className="h-4 w-4 text-blue-500" />
                       Travel Date
                     </label>
-                    <div className="relative group">
+                    <div className="relative group" ref={datePickerRef}>
                       <div 
-                        onClick={() => setSearchDates(searchDates === "Select dates" ? "25 Jul - 30 Jul 2025" : "Select dates")} 
+                        onClick={() => setShowDatePicker(!showDatePicker)} 
                         className="flex items-center w-full py-3 pl-4 pr-10 bg-gray-50/80 border border-gray-200 rounded-xl cursor-pointer transition-all duration-300 hover:border-blue-200 group-hover:shadow-sm"
                       >
                         <span className="text-gray-700">{searchDates}</span>
@@ -212,6 +356,128 @@ export default function LandingPage() {
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Date Picker Dropdown */}
+                      {showDatePicker && (
+                        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden w-72 md:w-80">
+                          <div className="p-3 pb-0">
+                            <div className="flex justify-between items-center mb-2">
+                              <div className="text-sm font-medium text-gray-900">Select dates</div>
+                              <button 
+                                onClick={resetDateSelection}
+                                className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                            
+                            <div className="flex justify-between items-center mb-2">
+                              <button 
+                                onClick={() => {
+                                  if (currentMonth === 0) {
+                                    setCurrentMonth(11);
+                                    setCurrentYear(currentYear - 1);
+                                  } else {
+                                    setCurrentMonth(currentMonth - 1);
+                                  }
+                                }}
+                                className="p-1 rounded-full hover:bg-gray-100"
+                              >
+                                <ChevronLeft size={18} className="text-gray-600" />
+                              </button>
+                              
+                              <span className="text-sm font-medium">
+                                {months[currentMonth]} {currentYear}
+                              </span>
+                              
+                              <button 
+                                onClick={() => {
+                                  if (currentMonth === 11) {
+                                    setCurrentMonth(0);
+                                    setCurrentYear(currentYear + 1);
+                                  } else {
+                                    setCurrentMonth(currentMonth + 1);
+                                  }
+                                }}
+                                className="p-1 rounded-full hover:bg-gray-100"
+                              >
+                                <ChevronRight size={18} className="text-gray-600" />
+                              </button>
+                            </div>
+                            
+                            {/* Day names */}
+                            <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-1">
+                              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day, i) => (
+                                <div key={i} className="py-1">{day}</div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* Calendar grid */}
+                          <div className="grid grid-cols-7 gap-0 p-2 pt-0">
+                            {generateCalendarDays().map((day, index) => {
+                              if (day === null) {
+                                return <div key={index} className="h-8 w-8"></div>;
+                              }
+                              
+                              const date = new Date(currentYear, currentMonth, day);
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              
+                              const isToday = date.getTime() === today.getTime();
+                              const isPast = date < today;
+                              const isSelected = selectedStartDate && date.getTime() === selectedStartDate.getTime() || 
+                                                selectedEndDate && date.getTime() === selectedEndDate.getTime();
+                              const isRangeDate = isInRange(day);
+                              
+                              return (
+                                <div 
+                                  key={index}
+                                  className="flex items-center justify-center"
+                                  onMouseEnter={() => handleDateHover(day)}
+                                >
+                                  <button
+                                    type="button"
+                                    disabled={isPast}
+                                    onClick={() => handleDateSelect(day)}
+                                    className={`
+                                      h-8 w-8 rounded-full text-xs flex items-center justify-center
+                                      ${isPast ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-50'}
+                                      ${isToday ? 'border border-blue-400' : ''}
+                                      ${isSelected ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}
+                                      ${isRangeDate ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' : ''}
+                                    `}
+                                  >
+                                    {day}
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          
+                          {/* Footer */}
+                          <div className="border-t border-gray-200 p-2 text-right">
+                            <button 
+                              className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
+                              onClick={() => {
+                                if (selectedStartDate && !selectedEndDate) {
+                                  // If only start date is selected, use current date as end date
+                                  const endDate = new Date(selectedStartDate);
+                                  endDate.setDate(endDate.getDate() + 5); // Default 5-day stay
+                                  setSelectedEndDate(endDate);
+                                  
+                                  const startDateStr = `${selectedStartDate.getDate()} ${months[selectedStartDate.getMonth()].substring(0, 3)}`;
+                                  const endDateStr = `${endDate.getDate()} ${months[endDate.getMonth()].substring(0, 3)}`;
+                                  setSearchDates(`${startDateStr} - ${endDateStr} ${currentYear}`);
+                                }
+                                setShowDatePicker(false);
+                              }}
+                            >
+                              Done
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

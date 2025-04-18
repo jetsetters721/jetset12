@@ -34,8 +34,9 @@ try {
 NODE_ENV=production
 PORT=10000
 
-# Database Configuration 
-DB_DATABASE=/data/database.sqlite
+# Supabase Configuration
+SUPABASE_URL=https://qqmagqwumjipdqvxbiqu.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
 
 # JWT Authentication
 JWT_SECRET=e4f8a2b5c9d3f7e1a0b5c8d2e6f3a9b7d1e0f5a2c4b8e3d7f9a1c5b0e2d4f8
@@ -73,7 +74,7 @@ VITE_API_URL=/api
   }
 
   if (!fs.existsSync(pagesAuthDir)) {
-    console.log('📁 Creating Pages/Auth directory...');
+    console.log('📁 Creating Auth directory...');
     fs.mkdirSync(pagesAuthDir, { recursive: true });
   }
 
@@ -123,7 +124,7 @@ VITE_API_URL=/api
     console.log('❌ Pages directory still not found');
   }
   
-  // Update app.jsx
+  // Check and update app.jsx imports
   const appPath = path.join(resourcesDir, 'app.jsx');
   if (fs.existsSync(appPath)) {
     console.log('\n📝 Updating app.jsx...');
@@ -143,14 +144,6 @@ VITE_API_URL=/api
   // Then install all packages
   console.log('📦 Installing all dependencies...');
   execSync('npm install', { stdio: 'inherit' });
-  
-  // Ensure database directory exists
-  console.log('\n🗄️ Setting up database directory...');
-  const dataDir = path.join(__dirname, 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-    console.log('✅ Created data directory');
-  }
   
   // Use our simplified Vite config
   console.log('\n🔧 Using simplified vite config...');
