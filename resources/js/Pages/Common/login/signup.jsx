@@ -90,11 +90,14 @@ export default function Signup() {
 
             // If registration is successful, store the token in localStorage
             localStorage.setItem('token', response.data.token);
+            
+            // Set authentication status to true in localStorage
+            localStorage.setItem('isAuthenticated', 'true');
 
             setProcessing(false);
 
-            // Redirect to profile dashboard on successful registration
-            navigate('/profiledashboard');
+            // Redirect to My Trips page on successful registration
+            navigate('/my-trips');
         } catch (error) {
             setProcessing(false);
             console.error('Registration error details:', error);

@@ -33,11 +33,14 @@ export default function Login() {
 
             // If login is successful, store the token in localStorage
             localStorage.setItem('token', response.data.token);
+            
+            // Set authentication status to true in localStorage
+            localStorage.setItem('isAuthenticated', 'true');
 
             setProcessing(false);
 
-            // Redirect to profile dashboard on successful login
-            navigate('/profiledashboard');
+            // Redirect to My Trips page on successful login
+            navigate('/my-trips');
         } catch (error) {
             setProcessing(false);
             
