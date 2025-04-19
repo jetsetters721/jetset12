@@ -28,7 +28,57 @@
           "expiryDate": "2023-09-15"
         }
       ],
-      "ships": ["Wonder of the Seas", "Symphony of the Seas", "Harmony of the Seas", "Allure of the Seas", "Oasis of the Seas"]
+      "ships": ["Wonder of the Seas", "Symphony of the Seas", "Harmony of the Seas", "Allure of the Seas", "Oasis of the Seas"],
+      "itinerary": [
+        {
+          "day": 1,
+          "port": "Miami",
+          "arrival": "Departure",
+          "departure": "4:00 PM",
+          "activities": [
+            "Board the ship",
+            "Explore the ship amenities",
+            "Welcome dinner",
+            "Evening entertainment show"
+          ]
+        },
+        {
+          "day": 2,
+          "port": "Nassau, Bahamas",
+          "arrival": "8:00 AM",
+          "departure": "5:00 PM",
+          "activities": [
+            "Guided city tour",
+            "Local cuisine tasting",
+            "Shopping at local markets",
+            "Cultural performances"
+          ]
+        },
+        {
+          "day": 3,
+          "port": "CocoCay",
+          "arrival": "7:00 AM",
+          "departure": "5:00 PM",
+          "activities": [
+            "Beach activities",
+            "Water sports",
+            "Island BBQ lunch",
+            "Snorkeling adventure"
+          ]
+        },
+        {
+          "day": 4,
+          "port": "Jamaica",
+          "arrival": "9:00 AM",
+          "departure": "6:00 PM",
+          "activities": [
+            "Dunn's River Falls tour",
+            "Jamaican cuisine experience",
+            "Reggae beach party",
+            "Local craft shopping"
+          ]
+        }
+      ]
     },
     {
       "id": 2,
@@ -58,7 +108,57 @@
           "expiryDate": "2023-07-31"
         }
       ],
-      "ships": ["Norwegian Prima", "Norwegian Encore", "Norwegian Bliss", "Norwegian Joy", "Norwegian Escape"]
+      "ships": ["Norwegian Prima", "Norwegian Encore", "Norwegian Bliss", "Norwegian Joy", "Norwegian Escape"],
+      "itinerary": [
+        {
+          "day": 1,
+          "port": "Barcelona",
+          "arrival": "Departure",
+          "departure": "5:00 PM",
+          "activities": [
+            "Board the ship",
+            "City tour before departure",
+            "Welcome dinner",
+            "Evening show"
+          ]
+        },
+        {
+          "day": 2,
+          "port": "Rome (Civitavecchia)",
+          "arrival": "8:00 AM",
+          "departure": "6:00 PM",
+          "activities": [
+            "Vatican City tour",
+            "Colosseum visit",
+            "Italian cooking class",
+            "Roman Forum exploration"
+          ]
+        },
+        {
+          "day": 3,
+          "port": "Athens",
+          "arrival": "7:00 AM",
+          "departure": "5:00 PM",
+          "activities": [
+            "Acropolis tour",
+            "Greek food tasting",
+            "Historical sites visit",
+            "Local market exploration"
+          ]
+        },
+        {
+          "day": 4,
+          "port": "Santorini",
+          "arrival": "9:00 AM",
+          "departure": "7:00 PM",
+          "activities": [
+            "Oia village tour",
+            "Wine tasting",
+            "Sunset viewing",
+            "Beach activities"
+          ]
+        }
+      ]
     },
     {
       "id": 3,

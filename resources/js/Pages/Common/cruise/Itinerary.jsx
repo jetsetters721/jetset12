@@ -4,6 +4,7 @@ import { FaShip, FaPhone, FaTimes, FaUser, FaEnvelope, FaCalendarAlt, FaCommentA
 import Navbar from '../Navbar';
 import Footer from '../Footer';
 import callbackService from '../../../services/callbackService';
+import cruiseLineData from './data/cruiselines.json';
 
 const cruiseHighlights = [
   { title: "Cruise Dining", img: "/images/dining.jpg" },
@@ -403,7 +404,7 @@ const CombinedStyles = () => (
 
 const Itinerary = () => {
   const [searchParams] = useSearchParams();
-  const cruiseId = searchParams.get('cruise');
+  const cruiseId = searchParams.get('cruiseId');
   const cruiseLine = searchParams.get('cruiseLine');
   const [isCallbackModalOpen, setIsCallbackModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -418,6 +419,60 @@ const Itinerary = () => {
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formSubmitError, setFormSubmitError] = useState('');
   const [formSubmitSuccess, setFormSubmitSuccess] = useState(false);
+  const [cruiseData, setCruiseData] = useState(null);
+
+  useEffect(() => {
+    // Find the selected cruise from cruiseLineData
+    const findCruise = () => {
+      const allCruises = cruiseLineData.cruiseLines;
+      let selectedCruise;
+
+      if (cruiseId) {
+        selectedCruise = allCruises.find(cruise => cruise.id === parseInt(cruiseId));
+      } else if (cruiseLine) {
+        selectedCruise = allCruises.find(cruise => 
+          cruise.name.toLowerCase() === cruiseLine.toLowerCase()
+        );
+      }
+
+      if (selectedCruise) {
+        setCruiseData({
+          name: selectedCruise.name,
+          route: {
+            departure: selectedCruise.departurePorts[0],
+            arrival: selectedCruise.destinations[0]
+          },
+          duration: selectedCruise.duration,
+          bookingInfo: {
+            embarkation: {
+              date: selectedCruise.departureDate,
+              time: selectedCruise.departureTime
+            },
+            disembarkation: {
+              date: selectedCruise.returnDate,
+              time: selectedCruise.returnTime
+            }
+          },
+          cruiseLine: selectedCruise.name,
+          price: {
+            amount: selectedCruise.price.replace(/[^0-9]/g, ''),
+            note: 'Excl. Tax Per Person in Double Occupancy'
+          },
+          days: selectedCruise.itinerary || [],
+          highlights: selectedCruise.highlights || [],
+          reviews: selectedCruise.reviews || {
+            text: "The tours in this website are great. The team is very professional and taking care of the customers.",
+            reviewer: {
+              name: "Happy Traveler",
+              position: "Verified Customer"
+            }
+          }
+        });
+      }
+    };
+
+    findCruise();
+  }, [cruiseId, cruiseLine]);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -489,16 +544,16 @@ const Itinerary = () => {
       {/* Hero Header Image */}
       <div className="relative w-full">
         <img 
-          src="/images/Rectangle 1434 (1).png" 
+          src={cruiseData?.image || "/images/Rectangle 1434 (1).png"}
           alt="Cruise Itinerary" 
           className="w-full h-[400px] object-cover object-center brightness-75"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/60 flex flex-col items-center justify-center px-4">
           <h1 className="text-4xl md:text-6xl text-white font-bold text-center mb-4 drop-shadow-lg">
-            {cruiseLine || 'Royal Caribbean'} Itinerary
+            {cruiseData?.name || `${cruiseLine || 'Royal Caribbean'} Itinerary`}
           </h1>
           <p className="text-xl md:text-2xl text-white text-center max-w-3xl mx-auto font-light drop-shadow-md">
-            Explore your upcoming cruise adventure day by day
+            {cruiseData?.description || 'Explore your upcoming cruise adventure day by day'}
           </p>
         </div>
       </div>
@@ -511,63 +566,99 @@ const Itinerary = () => {
           <Link 
             to="/cruises" 
             className="bg-[#0066b2] hover:bg-[#005091] text-white font-medium py-2 px-4 rounded-md transition-colors"
-            style={{ 
-              backgroundColor: '#0066b2',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '4px',
-              textDecoration: 'none',
-              fontWeight: '500',
-              display: 'inline-block'
-            }}
           >
             Back to Cruises
           </Link>
         </div>
         
         {/* Cruise Header */}
-        <div className="cruise-header">
-          <div className="header-top">
-            <span className="destination-text">Miami</span>
-            <span className="arrow-icon">≫</span>
-            <span className="destination-text">Florida</span>
-            <span className="duration">2N/3D</span>
-          </div>
+        <div className="cruise-header bg-white rounded-[20px] overflow-hidden shadow-lg relative p-6 md:p-10">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+            <div className="w-full md:w-3/5">
+              <div className="flex items-center gap-2 mb-6">
+                <span className="text-2xl md:text-3xl font-bold text-[#0066b2]">
+                  {cruiseData?.route?.departure || 'Miami'}
+                </span>
+                <span className="text-2xl md:text-3xl font-bold text-gray-400">≫</span>
+                <span className="text-2xl md:text-3xl font-bold text-[#0066b2]">
+                  {cruiseData?.route?.arrival || 'Florida'}
+                </span>
+                <span className="bg-blue-50 text-[#0066b2] px-3 py-1 rounded-full text-sm font-semibold ml-2">
+                  {cruiseData?.duration || '2N/3D'}
+                </span>
+              </div>
 
-          <div className="booking-info">
-            <div className="booking-info-item">
-              <FaShip size={16} color="#1e88e5" />
-              <span>Embarkation:</span>
-              <span style={{ fontWeight: 600 }}>Jan 13th, 4:30 PM</span>
-            </div>
-            <div className="booking-info-item">
-              <FaShip size={16} color="#1e88e5" />
-              <span>Disembarkation:</span>
-              <span style={{ fontWeight: 600 }}>Jan 17th, 7:30 PM</span>
-            </div>
-            <div className="booking-info-item">
-              <span>Cruise Line:</span>
-              <span style={{ fontWeight: 600 }}>{cruiseLine || 'Royal Caribbean'}</span>
-            </div>
-            <div className="booking-info-item">
-              <span>Visiting Ports:</span>
-              <span style={{ fontWeight: 600 }}>Miami | Florida</span>
-            </div>
-          </div>
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <div className="w-8 h-8 mr-4 mt-1 text-[#0066b2] bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaShip />
+                  </div>
+                  <div>
+                    <span className="block text-gray-800 font-semibold mb-1">Embarkation</span>
+                    <span className="text-gray-600">
+                      {cruiseData?.bookingInfo?.embarkation?.date || 'Jan 13th'}, 
+                      {cruiseData?.bookingInfo?.embarkation?.time || '4:30 PM'}
+                    </span>
+                  </div>
+                </div>
 
-          <div className="price-section">
-            <div style={{ color: '#4a5568', fontSize: '0.938rem', marginBottom: '0.25rem' }}>Starting from</div>
-            <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1a202c', marginBottom: '0.25rem' }}>$200</div>
-            <div style={{ fontSize: '0.813rem', color: '#718096', marginBottom: '1rem' }}>
-              Excl. Tax Per Person in Double Occupancy
+                <div className="flex items-start">
+                  <div className="w-8 h-8 mr-4 mt-1 text-[#0066b2] bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaShip />
+                  </div>
+                  <div>
+                    <span className="block text-gray-800 font-semibold mb-1">Disembarkation</span>
+                    <span className="text-gray-600">
+                      {cruiseData?.bookingInfo?.disembarkation?.date || 'Jan 17th'},
+                      {cruiseData?.bookingInfo?.disembarkation?.time || '7:30 PM'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="w-8 h-8 mr-4 mt-1 text-[#0066b2] bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaShip />
+                  </div>
+                  <div>
+                    <span className="block text-gray-800 font-semibold mb-1">Cruise Line</span>
+                    <span className="text-gray-600">
+                      {cruiseData?.cruiseLine || cruiseLine || 'Royal Caribbean'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="w-8 h-8 mr-4 mt-1 text-[#0066b2] bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FaShip />
+                  </div>
+                  <div>
+                    <span className="block text-gray-800 font-semibold mb-1">Visiting Ports</span>
+                    <span className="text-gray-600">
+                      {cruiseData?.days?.map(day => day.port).join(' | ') || 'Miami | Florida'}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <button 
-              className="select-room-btn"
-              onClick={() => setIsCallbackModalOpen(true)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-            >
-              <FaPhone size={16} /> Request Call Back
-            </button>
+
+            <div className="w-full md:w-2/5 flex flex-col items-end justify-between">
+              <div className="text-right mb-6">
+                <div className="text-sm text-gray-500 mb-1">Starting from</div>
+                <div className="text-3xl font-bold text-[#0066b2] mb-1">
+                  ${cruiseData?.price?.amount || '200'}
+                </div>
+                <div className="text-sm text-gray-500">
+                  {cruiseData?.price?.note || 'Excl. Tax Per Person in Double Occupancy'}
+                </div>
+              </div>
+
+              <button 
+                className="w-full md:w-auto bg-[#0066b2] hover:bg-[#005091] text-white font-medium py-3 px-8 rounded-full transition-all duration-300 flex items-center justify-center gap-2"
+                onClick={() => setIsCallbackModalOpen(true)}
+              >
+                <FaPhone size={16} /> Request Call Back
+              </button>
+            </div>
           </div>
         </div>
 
@@ -576,47 +667,19 @@ const Itinerary = () => {
           <h2 className="itinerary-title">Itinerary</h2>
           <p className="itinerary-subtitle">Day wise details of your package</p>
 
-          {/* Day 1 */}
-          <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '2rem' }}>
-            <div className="day-box">
-              <span>Day</span>
-              <span>1</span>
+          {cruiseData?.days?.map((day) => (
+            <div key={day.day} style={{ display: 'flex', gap: '1.25rem', marginBottom: '2rem' }}>
+              <div className="day-box">
+                <span>Day</span>
+                <span>{day.day}</span>
+              </div>
+              <div className="day-content">
+                <h3 className="day-title">{day.port}</h3>
+                <p className="day-subtitle">{day.subtitle || day.arrival}</p>
+                <p className="day-description">{day.description || day.activities?.join(', ')}</p>
+              </div>
             </div>
-            <div className="day-content">
-              <h3 className="day-title">Miami Port</h3>
-              <p className="day-subtitle">WELCOME ONBOARD</p>
-              <p className="day-description">
-                Just as you step aboard the Empress — the top cruise in India — also known as 'A City on the Sea,' you'll be greeted with a warm welcome. Once settled, dive right in and explore the many offerings lined up for you aboard our cruise ship.
-              </p>
-            </div>
-          </div>
-
-          {/* Day 2 */}
-          <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '2rem' }}>
-            <div className="day-box">
-              <span>Day</span>
-              <span>2</span>
-            </div>
-            <div className="day-content">
-              <h3 className="day-title">At Sea</h3>
-              <p className="day-subtitle">DAY AT SEA</p>
-              <p className="day-description">
-                Just as you step aboard the Empress — the top cruise in India — also known as 'A City on the Sea,' you'll be greeted with a warm welcome. Once settled, dive right in and explore the many offerings lined up for you aboard our cruise ship.
-              </p>
-            </div>
-          </div>
-
-          {/* Day 3 */}
-          <div style={{ display: 'flex', gap: '1.25rem', marginBottom: '1.5rem' }}>
-            <div className="day-box">
-              <span>Day</span>
-              <span>3</span>
-            </div>
-            <div className="day-content">
-              <h3 className="day-title">Florida Port</h3>
-              <p className="day-subtitle">ARRIVED IN Florida</p>
-            </div>
-          </div>
+          ))}
 
           <button className="view-more">
             View Full Itinerary
@@ -630,7 +693,7 @@ const Itinerary = () => {
         <div className="highlights-section">
           <h2 className="text-2xl font-bold text-center">Your Cruise Highlight</h2>
           <div className="highlights-grid">
-            {cruiseHighlights.map((highlight, index) => (
+            {cruiseData?.highlights?.map((highlight, index) => (
               <div key={index} className="highlight-card">
                 <img src={highlight.img} alt={highlight.title} />
               </div>
@@ -643,13 +706,17 @@ const Itinerary = () => {
           <h2>Customer Reviews</h2>
           <div className="review-quote">"</div>
           <p className="review-text">
-            The tours in this website are great. I had been really enjoy with my family! The team is very professional and taking care of the customers. Will surely recommend to my freind to join this company!
+            {cruiseData?.reviews?.text || "The tours in this website are great. The team is very professional and taking care of the customers."}
           </p>
-          <div className="reviewer-name">Ali Tufan</div>
-          <div className="reviewer-position">Product Manager, Apple Inc.</div>
+          <div className="reviewer-name">
+            {cruiseData?.reviews?.reviewer?.name || 'Happy Traveler'}
+          </div>
+          <div className="reviewer-position">
+            {cruiseData?.reviews?.reviewer?.position || 'Verified Customer'}
+          </div>
           
           <div className="reviewer-images">
-            {reviewers.map((reviewer) => (
+            {cruiseData?.reviews?.reviewers?.map((reviewer) => (
               <div 
                 key={reviewer.id} 
                 className={`reviewer-image ${reviewer.isActive ? 'active' : ''}`}
