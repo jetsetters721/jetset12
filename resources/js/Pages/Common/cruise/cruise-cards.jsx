@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { FaMapMarkerAlt, FaCalendar, FaArrowLeft, FaShip, FaSearch } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendar, FaArrowLeft, FaShip, FaSearch, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
 // import './cruise-cards.css';
 import cruiseLineData from './data/cruiselines.json';
+import destinationsData from './data/destinations.json';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
 
@@ -14,38 +15,109 @@ const CruiseCards = () => {
   
   const [title, setTitle] = useState("All Cruises");
   const [filteredCruises, setFilteredCruises] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [usingFallback, setUsingFallback] = useState(false);
+
+  const fetchCruiseData = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Fetch cruise data from our API endpoint
+      const response = await fetch('/api/cruises');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch cruise data');
+      }
+
+      const data = await response.json();
+      
+      // Transform API data to match our local data structure
+      const transformedCruises = data.map(cruise => ({
+        id: Math.random().toString(36).substr(2, 9),
+        name: cruise.cruiseLine,
+        image: cruise.image || '/images/default-cruise.jpg',
+        duration: cruise.duration,
+        description: cruise.name,
+        destinations: cruise.destinations,
+        departurePorts: [cruise.departurePort],
+        price: cruise.price,
+        priceValue: parseFloat(cruise.price.replace(/[^0-9.]/g, '')),
+        departureDate: cruise.departureDate
+      }));
+
+      setFilteredCruises(transformedCruises);
+      setUsingFallback(false);
+    } catch (apiError) {
+      console.error('Error fetching cruise data:', apiError);
+      setError('Unable to fetch live cruise data. Using fallback data.');
+      setUsingFallback(true);
+      
+      // Fallback to local JSON data
+      let filtered = cruiseLineData.cruiseLines;
+
+      if (cruiseLineParam) {
+        filtered = filtered.filter(cruise => 
+          cruise.name.toLowerCase().includes(cruiseLineParam.toLowerCase())
+        );
+        setTitle(`${cruiseLineParam} Cruises`);
+      }
+
+      if (destinationParam) {
+        const selectedDestination = destinationsData.destinations.find(dest => 
+          dest.name.toLowerCase() === destinationParam.toLowerCase()
+        );
+
+        if (selectedDestination) {
+          filtered = filtered.filter(cruise => 
+            selectedDestination.cruiseLines.includes(cruise.name)
+          );
+          setTitle(`${selectedDestination.name} Cruises`);
+        }
+      }
+
+      if (countryParam) {
+        filtered = filtered.filter(cruise => 
+          cruise.departurePorts.some(port => 
+            port.toLowerCase().includes(countryParam.toLowerCase())
+          )
+        );
+        setTitle(`Cruises from ${countryParam}`);
+      }
+
+      setFilteredCruises(filtered);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Filter cruises based on search parameters
-    let filtered = cruiseLineData.cruiseLines;
-
-    if (cruiseLineParam) {
-      filtered = filtered.filter(cruise => 
-        cruise.name.toLowerCase().includes(cruiseLineParam.toLowerCase())
-      );
-      setTitle(`${cruiseLineParam} Cruises`);
-    }
-
-    if (destinationParam) {
-      filtered = filtered.filter(cruise => 
-        cruise.destinations.some(dest => 
-          dest.toLowerCase().includes(destinationParam.toLowerCase())
-        )
-      );
-      setTitle(`${destinationParam} Cruises`);
-    }
-
-    if (countryParam) {
-      filtered = filtered.filter(cruise => 
-        cruise.departurePorts.some(port => 
-          port.toLowerCase().includes(countryParam.toLowerCase())
-        )
-      );
-      setTitle(`Cruises from ${countryParam}`);
-    }
-
-    setFilteredCruises(filtered);
+    fetchCruiseData();
   }, [cruiseLineParam, destinationParam, countryParam]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <FaSpinner className="text-blue-600 text-5xl animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading cruise data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !usingFallback) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <FaExclamationTriangle className="text-red-500 text-5xl mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold text-gray-700 mb-2">Error Loading Data</h2>
+          <p className="text-gray-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -60,7 +132,14 @@ const CruiseCards = () => {
               <FaArrowLeft className="mr-2" />
               Back to Search
             </Link>
-            <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+              {usingFallback && (
+                <span className="ml-2 text-sm text-yellow-600 bg-yellow-100 px-2 py-1 rounded">
+                  Using Fallback Data
+                </span>
+              )}
+            </div>
             <div className="w-[100px]"></div> {/* Spacer for alignment */}
           </div>
         </div>
