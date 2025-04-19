@@ -92,6 +92,37 @@ CREATE TABLE IF NOT EXISTS bookings (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Subscriptions Table
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email TEXT UNIQUE NOT NULL,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'unsubscribed')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable Row Level Security (RLS) for subscriptions table
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for subscriptions
+CREATE POLICY "Anyone can subscribe"
+    ON subscriptions FOR INSERT
+    WITH CHECK (true);
+
+CREATE POLICY "Admins can view all subscriptions"
+    ON subscriptions FOR SELECT
+    USING (auth.role() = 'admin');
+
+CREATE POLICY "Admins can update subscriptions"
+    ON subscriptions FOR UPDATE
+    USING (auth.role() = 'admin');
+
+-- Create trigger for subscriptions updated_at
+CREATE TRIGGER update_subscriptions_updated_at
+    BEFORE UPDATE ON subscriptions
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_callback_requests_status ON callback_requests(status);
 CREATE INDEX IF NOT EXISTS idx_quote_requests_status ON quote_requests(status);

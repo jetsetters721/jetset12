@@ -8,6 +8,7 @@ import Navbar from '../Navbar';
 import Footer from '../Footer';
 import WhyChooseUsSection from './WhyChooseUsSection';
 import ContactSection from './ContactSection';
+import supabase from '../../../lib/supabase';
 
 // CSS for page and section styling
 const styles = {
@@ -500,6 +501,10 @@ const PromoSection = () => {
 };
 
 const HomePage = () => {
+  const [subscriptionEmail, setSubscriptionEmail] = useState('');
+  const [subscriptionSubmitted, setSubscriptionSubmitted] = useState(false);
+  const [subscriptionError, setSubscriptionError] = useState('');
+
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
@@ -511,6 +516,38 @@ const HomePage = () => {
       document.documentElement.style.scrollBehavior = 'auto';
     };
   }, []);
+
+  const handleSubscriptionSubmit = async (e) => {
+    e.preventDefault();
+    setSubscriptionError('');
+
+    try {
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .insert([
+          { email: subscriptionEmail }
+        ]);
+
+      if (error) {
+        if (error.code === '23505') { // Unique violation
+          setSubscriptionError('This email is already subscribed.');
+        } else {
+          setSubscriptionError('An error occurred. Please try again.');
+        }
+        return;
+      }
+
+      setSubscriptionSubmitted(true);
+      setSubscriptionEmail('');
+
+      // Reset the success message after 3 seconds
+      setTimeout(() => {
+        setSubscriptionSubmitted(false);
+      }, 3000);
+    } catch (error) {
+      setSubscriptionError('An unexpected error occurred. Please try again.');
+    }
+  };
 
   return (
     <div className="home-page-wrapper" style={styles.homePageWrapper}>
@@ -575,23 +612,41 @@ const HomePage = () => {
                   <span className="text-sm text-white">Join 25,000+ subscribers</span>
                 </div>
                 
-                <form className="w-full flex items-center gap-2">
-                  <input
-                    type="email"
-                    placeholder="Enter your email address"
-                    className="flex-1 px-5 py-3 rounded-l-lg bg-white border-0 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                    required
-                  />
-                  <button 
-                    type="submit" 
-                    className="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-r-lg flex items-center transition-colors"
-                  >
-                    Subscribe
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </button>
-                </form>
+                {subscriptionSubmitted ? (
+                  <div className="w-full bg-green-500 bg-opacity-20 backdrop-blur-sm rounded-lg p-4 text-white animate-fadeIn">
+                    <div className="flex items-center justify-center">
+                      <FaCheckCircle className="text-green-400 mr-2" />
+                      <span>Successfully subscribed! Thank you.</span>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubscriptionSubmit} className="w-full">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="email"
+                        value={subscriptionEmail}
+                        onChange={(e) => setSubscriptionEmail(e.target.value)}
+                        placeholder="Enter your email address"
+                        className="flex-1 px-5 py-3 rounded-l-lg bg-white border-0 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        required
+                      />
+                      <button 
+                        type="submit" 
+                        className="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-r-lg flex items-center transition-colors"
+                      >
+                        Subscribe
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                      </button>
+                    </div>
+                    {subscriptionError && (
+                      <div className="mt-2 text-red-400 text-sm text-center">
+                        {subscriptionError}
+                      </div>
+                    )}
+                  </form>
+                )}
                 
                 <div className="mt-4">
                   <p className="text-white text-opacity-80 text-xs">By subscribing, you agree to our <a href="#" className="underline hover:text-white">Privacy Policy</a></p>
